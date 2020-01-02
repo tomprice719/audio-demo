@@ -10,7 +10,8 @@ pom.xml.asc
 /.nrepl-port
 .hgignore
 .hg/
-.idea/*
+/.idea
 *~
 *.log
 *.iml
+/native
