@@ -8,10 +8,10 @@
 ;play-note-fn must also set the frequency bus
 ;modwheel bus can be incorporated in play-note-fn as a closure
 (defrecord Poly-Instrument
-  [play-note-fn stop-note-fn note-data scale notes current-note-num pitch-bend]
+  [play-note-fn stop-note-fn note-data freq-fn notes current-note-num pitch-bend]
   Instrument
   (note-on [this note-num velocity]
-    (let [freq (scale note-num pitch-bend)]
+    (let [freq (freq-fn note-num pitch-bend)]
       (if (and freq (not (notes note-num)))
         (-> this
             (assoc-in [:notes note-num]
@@ -29,10 +29,10 @@
       this)))
 
 (defrecord Mono-Instrument
-  [play-note-fn stop-note-fn note-data scale current-note-num pitch-bend]
+  [play-note-fn stop-note-fn note-data freq-fn current-note-num pitch-bend]
   Instrument
   (note-on [this note-num velocity]
-    (if-let [freq (scale note-num pitch-bend)]
+    (if-let [freq (freq-fn note-num pitch-bend)]
       (do (play-note-fn freq (note-data note-num) velocity)
           (assoc this :current-note-num note-num))
       this))
@@ -42,8 +42,14 @@
           (assoc this current-note-num nil))
       this)))
 
+(defn next-freq-fn [{:keys [freq-fn-vec freq-fn-index] :as inst}]
+  (let [new-index (mod (inc freq-fn-index) (count freq-fn-vec))]
+    (assoc inst :freq-fn (freq-fn-vec new-index)
+                :freq-fn-index new-index)))
+
 (def instrument-fn-map {:note-on note-on
-                        :note-off note-off})
+                        :note-off note-off
+                        :next-freq-fn next-freq-fn})
 
 (defn update-instrument [[fn-key & args] instrument]
   (apply (instrument-fn-map fn-key) instrument args))
@@ -59,5 +65,6 @@
   (case (:event event-data)
     :white-note-on [[(:current-instrument state) :note-on (:white-note-num event-data) (:velocity event-data)]]
     :white-note-off [[(:current-instrument state) :note-off (:white-note-num event-data)]]
+    :black-note-on [[(:current-instrument state) :next-freq-fn]]
     []))
 

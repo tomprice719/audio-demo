@@ -3,48 +3,52 @@
             [audio-stuff2.synths :refer [saw-keys]]
             [audio-stuff2.instrument-utils :refer :all]
             [audio-stuff2.input-events :refer [add-handlers]]
-            [audio-stuff2.prepare-kernel :refer [get-ir-spectrum fft-size]]
-            [overtone.sc.machinery.server.comms :refer [with-server-sync]])
+            [audio-stuff2.scale-utils :refer [make-freq-fn-vec add-freq-fn-vec load-chords]]
+            [audio-stuff2.reverb :refer [get-ir-spectrum fft-size reverb-synth]]
+            [overtone.sc.machinery.server.comms :refer [with-server-sync]]
+            [overtone.sc.machinery.server.connection :refer [connection-status*]]
+            [overtone.sc.machinery.allocator :refer [clear-ids]])
   (:import (audio_stuff2.instrument_utils Poly-Instrument)))
 
-(boot-external-server)
+(def notes-g)
+(def effects-g)
 
-(defn simple-scale [freqs]
-  (fn [note-num midi-pb]
-    (freqs note-num)))
+(defn make-bus [left-ir left-wet-gain left-dry-gain
+                right-ir right-wet-gain right-dry-gain]
+  (let [bus (audio-bus)
+        left-ir-spec (with-server-sync #(get-ir-spectrum left-ir))
+        right-ir-spec (with-server-sync #(get-ir-spectrum right-ir))]
+    (println bus)
+    (reverb-synth [:tail effects-g] bus 0 left-ir-spec left-wet-gain left-dry-gain)
+    (reverb-synth [:tail effects-g] bus 1 right-ir-spec right-wet-gain right-dry-gain)
+    bus))
 
-(def my-scale (simple-scale [100 200 300 400 500 600 700 800 900 1000 1100 1200 1300 1400 1500 1600]))
 (def note-data (vec (repeat 50 nil)))
 
-(def notes-g (group "notes"))
-(def effects-g (group "effects" :after notes-g))
-(def pos1-bus (audio-bus))
-
-(defsynth reverb [in-bus -1 out-bus -1 ir-spec -1 gain 1]
-          (let [sig    (in:ar in-bus 1)
-                reverb (part-conv (* sig 0.1 gain) fft-size ir-spec)
-                ]
-            (out out-bus (delay-n reverb 0.01 0.01))))
-
-(def left-ir-spec1 (with-server-sync #(get-ir-spectrum "~/impulse-responses/left1.wav")))
-(def right-ir-spec1 (with-server-sync #(get-ir-spectrum "~/impulse-responses/right1.wav")))
-
-(reverb [:tail effects-g] pos1-bus 0 left-ir-spec1 6.0)
-(reverb [:tail effects-g] pos1-bus 1 right-ir-spec1 6.0)
-
-(defn play-keys [freq _ velocity]
-  (saw-keys [:tail notes-g] pos1-bus freq))
+(defn play-fn [synth bus]
+  (fn [freq _ velocity]
+    (synth [:tail notes-g] bus freq)))
 
 (defn stop-synth [synth]
   (node-control synth [:gate 0])
-  (after-delay 10000 #(kill synth)))
+  (after-delay 10001 #(kill synth)))
 
-(def key-instrument (Poly-Instrument. play-keys stop-synth note-data my-scale {} nil 1))
 
-(add-handlers (instrument-updater standard-instrument-handler)
-              {:instruments {:keys key-instrument} :current-instrument :keys})
+(defn make-instruments []
+  {:keys
+   (add-freq-fn-vec (Poly-Instrument. (play-fn saw-keys
+                                               (make-bus "~/impulse-responses/left1.wav" 1.0 0.0
+                                                         "~/impulse-responses/right1.wav" 1.0 0.0))
+                                      stop-synth note-data nil {} nil 1)
+                    (make-freq-fn-vec (load-chords "/home/tom/audio-stuff2/chords") 0.0))})
 
-(defn -main
-  "I don't do a whole lot."
-  [& args]
-  (println "Hello, World!"))
+(defn on-refresh []
+  (when (= @connection-status* :disconnected)
+    (boot-external-server))
+  (clear-all)
+  (clear-ids :audio-bus)
+  (clear-ids :control-bus)
+  (def notes-g (group "notes"))
+  (def effects-g (group "effects" :after notes-g))
+  (add-handlers (instrument-updater standard-instrument-handler)
+                {:instruments (make-instruments) :current-instrument :keys}))

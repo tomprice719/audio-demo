@@ -17,7 +17,7 @@
         (+ black-key (* 5 octave))))))
 
 
-(def ^:dynamic event-data nil)
+(def ^:dynamic event-data)
 
 (defn add-handlers [state-fn initial-state]
   (let [state (agent initial-state)]
