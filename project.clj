@@ -6,5 +6,6 @@
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [overtone "0.10.3"]
                  [org.clojure/tools.namespace "0.2.11"]
-                 [com.github.wendykierp/JTransforms "3.0"]]
+                 [com.github.wendykierp/JTransforms "3.0"]
+                 [clj-stacktrace "0.2.8"]]
   :repl-options {:init-ns audio-stuff2.loader})

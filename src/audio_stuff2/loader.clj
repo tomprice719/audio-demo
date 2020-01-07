@@ -1,10 +1,7 @@
 (ns audio-stuff2.loader
   (:require [clojure.tools.namespace.repl :refer [refresh]]
-            [clojure.core :refer [*e]]
-            [overtone.core :refer :all]))
-
-(defn error []
-  (println *e))
+            [overtone.core :refer :all]
+            [clojure.repl :refer :all]))
 
 (defn start []
   (when (= (refresh) :ok)

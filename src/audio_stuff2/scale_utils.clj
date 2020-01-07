@@ -14,9 +14,10 @@
                                 pitch
                                 (/ (- midi-pb 64) 64)))))))
 
-(defn make-freq-fn [pb-range freqs]
-  (fn [note-num midi-pb]
-    (+ (freqs note-num) (* pb-range midi-pb))))
+(comment
+  (defn make-freq-fn [pb-range freqs]
+    (fn [note-num midi-pb]
+      (+ (freqs note-num) (* pb-range midi-pb)))))
 
 (defn load-chords [filename]
   ((fn [x] (println x) x)
@@ -25,12 +26,17 @@
      (map read-string (clojure.string/split line #"\s+")))))
 
 (defn combination-chord [[fundamental-freq & chords]]
-  (vec (take num-notes (dedupe (sort (for [x (range 1 30) y chords] (* x y fundamental-freq)))))))
+  (->> (for [x (range num-notes) y chords]
+         (* (inc x) y fundamental-freq))
+       sort
+       dedupe
+       (take num-notes)
+       vec))
 
-(defn make-freq-fn-vec [chord-seq pb-range]
-  (mapv (comp (partial make-freq-fn pb-range) combination-chord) chord-seq))
+(defn make-scale-vec [chord-seq]
+  (mapv combination-chord chord-seq))
 
-(defn add-freq-fn-vec [inst freq-fn-vec]
-  (assoc inst :freq-fn-index 0
-              :freq-fn-vec freq-fn-vec
-              :freq-fn (freq-fn-vec 0)))
+(defn add-scale-vec [inst scale-vec]
+  (assoc inst :scale-index 0
+              :scale-vec scale-vec
+              :scale (scale-vec 0)))

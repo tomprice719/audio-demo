@@ -9,16 +9,15 @@
 ;play-note-fn must also set the frequency bus
 ;modwheel bus can be incorporated in play-note-fn as a closure
 (defrecord Poly-Instrument
-  [play-note-fn stop-note-fn note-data freq-fn notes current-note-num pitch-bend]
+  [play-note-fn stop-note-fn note-data notes current-note-num pitch-bend]
   Instrument
   (note-on [this note-num velocity]
-    (let [freq (freq-fn note-num pitch-bend)]
-      (if (and freq (not (notes note-num)))
-        (-> this
-            (assoc-in [:notes note-num]
-                      (play-note-fn freq (note-data note-num) velocity))
-            (assoc :current-note-num note-num))
-        this)))
+    (if-let [d (and (not (notes note-num)) (get note-data note-num))]
+      (-> this
+          (assoc-in [:notes note-num]
+                    (play-note-fn d pitch-bend velocity))
+          (assoc :current-note-num note-num))
+      this))
   (note-off [this note-num]
     (if-let [synth (notes note-num)]
       (do (stop-note-fn synth)
@@ -47,14 +46,17 @@
           (assoc this current-note-num nil))
       this)))
 
-(defn next-freq-fn [{:keys [freq-fn-vec freq-fn-index] :as inst}]
-  (let [new-index (mod (inc freq-fn-index) (count freq-fn-vec))]
-    (assoc inst :freq-fn (freq-fn-vec new-index)
-                :freq-fn-index new-index)))
+(defn add-note-data [{:keys [scale freq-busses] :as inst}]
+  (assoc inst :note-data (mapv vector scale freq-busses)))
 
-(def instrument-fn-map {:note-on      note-on
-                        :note-off     note-off
-                        :next-freq-fn next-freq-fn})
+(defn next-scale [{:keys [scale-vec scale-index] :as inst}]
+  (let [new-index (mod (inc scale-index) (count scale-vec))]
+    (assoc inst :scale (scale-vec new-index)
+                :scale-index new-index)))
+
+(def instrument-fn-map {:note-on    note-on
+                        :note-off   note-off
+                        :next-scale (comp add-note-data next-scale)})
 
 (defn update-instrument [[fn-key & args] instrument]
   (apply (instrument-fn-map fn-key) instrument args))
@@ -70,6 +72,6 @@
   (case (:event event-data)
     :white-note-on [[(:current-instrument state) :note-on (:white-note-num event-data) (:velocity event-data)]]
     :white-note-off [[(:current-instrument state) :note-off (:white-note-num event-data)]]
-    :black-note-on [[(:current-instrument state) :next-freq-fn]]
+    :black-note-on [[(:current-instrument state) :next-scale]]
     []))
 
