@@ -1,5 +1,7 @@
 (ns audio-stuff2.scale-utils)
 
+(def num-notes 20)
+
 (comment
   (defn bent-pitch [pitch pb-ratio midi-pb]
     (let [high-pitch (* pitch pb-ratio)
@@ -23,7 +25,7 @@
      (map read-string (clojure.string/split line #"\s+")))))
 
 (defn combination-chord [[fundamental-freq & chords]]
-  (vec (take 30 (dedupe (sort (for [x (range 1 30) y chords] (* x y fundamental-freq)))))))
+  (vec (take num-notes (dedupe (sort (for [x (range 1 30) y chords] (* x y fundamental-freq)))))))
 
 (defn make-freq-fn-vec [chord-seq pb-range]
   (mapv (comp (partial make-freq-fn pb-range) combination-chord) chord-seq))

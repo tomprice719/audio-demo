@@ -19,7 +19,7 @@
 
 (def ^:dynamic event-data)
 
-(defn add-handlers [state-fn initial-state]
+(defn set-handlers [initial-state state-fn]
   (let [state (agent initial-state)]
     (e/on-event [:midi :note-on]
                 #(binding [event-data {:event    :note-on

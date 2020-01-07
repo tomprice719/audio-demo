@@ -1,5 +1,6 @@
 (ns audio-stuff2.instrument-utils
-  (:require [audio-stuff2.input-events :refer [event-data]]))
+  (:require [audio-stuff2.input-events :refer [event-data]]
+            [overtone.core :refer :all]))
 
 (defprotocol Instrument
   (note-on [this note-num velocity])
@@ -28,6 +29,10 @@
                   this2)))
       this)))
 
+(defn make-poly-instrument [field-map]
+  (map->Poly-Instrument (merge {:notes {} :current-note-num nil :pitch-bend 0}
+                               field-map)))
+
 (defrecord Mono-Instrument
   [play-note-fn stop-note-fn note-data freq-fn current-note-num pitch-bend]
   Instrument
@@ -47,8 +52,8 @@
     (assoc inst :freq-fn (freq-fn-vec new-index)
                 :freq-fn-index new-index)))
 
-(def instrument-fn-map {:note-on note-on
-                        :note-off note-off
+(def instrument-fn-map {:note-on      note-on
+                        :note-off     note-off
                         :next-freq-fn next-freq-fn})
 
 (defn update-instrument [[fn-key & args] instrument]

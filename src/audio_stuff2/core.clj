@@ -1,9 +1,10 @@
 (ns audio-stuff2.core
   (:require [overtone.core :refer :all]
+            [audio-stuff2.wavetables :refer [get-wt-data]]
             [audio-stuff2.synths :refer [saw-keys]]
             [audio-stuff2.instrument-utils :refer :all]
-            [audio-stuff2.input-events :refer [add-handlers]]
-            [audio-stuff2.scale-utils :refer [make-freq-fn-vec add-freq-fn-vec load-chords]]
+            [audio-stuff2.input-events :refer [set-handlers]]
+            [audio-stuff2.scale-utils :refer [make-freq-fn-vec add-freq-fn-vec load-chords num-notes]]
             [audio-stuff2.reverb :refer [get-ir-spectrum fft-size reverb-synth]]
             [overtone.sc.machinery.server.comms :refer [with-server-sync]]
             [overtone.sc.machinery.server.connection :refer [connection-status*]]
@@ -23,32 +24,49 @@
     (reverb-synth [:tail effects-g] bus 1 right-ir-spec right-wet-gain right-dry-gain)
     bus))
 
-(def note-data (vec (repeat 50 nil)))
+(defn play-fn [synth out-bus modwheel-bus]
+  (fn [freq freq-bus velocity]
+    (control-bus-set! freq-bus freq)
+    (synth [:tail notes-g] out-bus freq-bus modwheel-bus)))
 
-(defn play-fn [synth bus]
-  (fn [freq _ velocity]
-    (synth [:tail notes-g] bus freq)))
+(defn play-fn2 [synth bus]
+  (fn [freq freq-bus velocity]
+    (let [[wt1 wt2 wt3 wt4] (get-wt-data freq)]
+      (synth [:tail notes-g] bus freq wt1 wt2 wt3 wt4))))
 
 (defn stop-synth [synth]
   (node-control synth [:gate 0])
   (after-delay 10001 #(kill synth)))
 
+(defn add-synth [inst synth & bus-args]
+  (let [modwheel-bus (control-bus)]
+    (assoc inst
+      :play-note-fn (play-fn synth (apply make-bus bus-args) modwheel-bus)
+      :stop-note-fn stop-synth
+      :note-data (vec (repeatedly num-notes control-bus))
+      :modwheel-bus modwheel-bus)))
 
-(defn make-instruments []
-  {:keys
-   (add-freq-fn-vec (Poly-Instrument. (play-fn saw-keys
-                                               (make-bus "~/impulse-responses/left1.wav" 1.0 0.0
-                                                         "~/impulse-responses/right1.wav" 1.0 0.0))
-                                      stop-synth note-data nil {} nil 1)
-                    (make-freq-fn-vec (load-chords "/home/tom/audio-stuff2/chords") 0.0))})
+
+(defn add-instruments [state]
+  (assoc state :instruments
+               {:keys
+                (make-poly-instrument
+                  (-> {}
+                      (add-synth saw-keys
+                                 "~/impulse-responses/left1.wav" 1.0 0.0
+                                 "~/impulse-responses/right1.wav" 1.0 0.0)
+                      (add-freq-fn-vec (make-freq-fn-vec (load-chords "/home/tom/audio-stuff2/chords") 0.0))))
+                }))
 
 (defn on-refresh []
   (when (= @connection-status* :disconnected)
-    (boot-external-server))
+    (boot-external-server)
+    (with-server-sync #(get-wt-data 2000.0)))
   (clear-all)
-  (clear-ids :audio-bus)
-  (clear-ids :control-bus)
+  ;(clear-ids :audio-bus) NOT SAFE
+  ;(clear-ids :control-bus)
   (def notes-g (group "notes"))
   (def effects-g (group "effects" :after notes-g))
-  (add-handlers (instrument-updater standard-instrument-handler)
-                {:instruments (make-instruments) :current-instrument :keys}))
+  (-> {:current-instrument :keys}
+      add-instruments
+      (set-handlers (instrument-updater standard-instrument-handler))))
