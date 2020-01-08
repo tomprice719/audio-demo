@@ -7,8 +7,6 @@
   (note-on [this note-num velocity])
   (note-off [this note-num]))
 
-;play-note-fn must also set the frequency bus
-;modwheel bus can be incorporated in play-note-fn as a closure
 (defrecord Poly-Instrument
   [play-note-fn stop-note-fn note-data notes current-note-num pitch-bend]
   Instrument
@@ -53,6 +51,10 @@
     (control-bus-set! freq-bus (pitch-bend-fn freq pb-value)))
   (assoc inst :pitch-bend pb-value))
 
+(defn mod-wheel [{:keys [mod-wheel-bus] :as inst} mod-wheel-value]
+  (control-bus-set! mod-wheel-bus mod-wheel-value)
+  inst)
+
 (defn add-note-data [{:keys [scale freq-busses] :as inst}]
   (assoc inst :note-data (mapv vector scale freq-busses)))
 
@@ -64,7 +66,8 @@
 (def instrument-fn-map {:note-on    note-on
                         :note-off   note-off
                         :next-scale (comp add-note-data next-scale)
-                        :pitch-bend pitch-bend})
+                        :pitch-bend pitch-bend
+                        :mod-wheel mod-wheel})
 
 (defn update-instrument [[fn-key & args] instrument]
   (apply (instrument-fn-map fn-key) instrument args))
@@ -82,5 +85,6 @@
     :white-note-off [[(:current-instrument state) :note-off (:white-note-num event-data)]]
     :black-note-on [[(:current-instrument state) :next-scale]]
     :pitch-bend [[(:current-instrument state) :pitch-bend (:pb-value event-data)]]
+    :mod-wheel [[(:current-instrument state) :mod-wheel (:mod-wheel-value event-data)]]
     []))
 

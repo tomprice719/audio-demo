@@ -25,10 +25,10 @@
     (reverb-synth [:tail effects-g] bus 1 right-ir-spec right-wet-gain right-dry-gain)
     bus))
 
-(defn play-fn [synth out-bus modwheel-bus pitch-bend-fn]
+(defn play-fn [synth out-bus mod-wheel-bus pitch-bend-fn]
   (fn [[freq freq-bus] pb-value velocity]
     (control-bus-set! freq-bus (pitch-bend-fn freq pb-value))
-    [(synth [:tail notes-g] out-bus freq-bus modwheel-bus)
+    [(synth [:tail notes-g] out-bus freq-bus mod-wheel-bus)
      freq
      freq-bus]))
 
@@ -42,13 +42,14 @@
   (after-delay 10000 #(kill synth)))
 
 (defn add-synth [inst synth & bus-args]
-  (let [modwheel-bus (control-bus)
+  (let [mod-wheel-bus (control-bus)
         pitch-bend-fn (fn [freq pb-value] (* freq (+ 1 (* pb-value 0.1))))]
+    (control-bus-set! mod-wheel-bus 0)
     (assoc inst
-      :play-note-fn (play-fn synth (apply make-bus bus-args) modwheel-bus pitch-bend-fn)
+      :play-note-fn (play-fn synth (apply make-bus bus-args) mod-wheel-bus pitch-bend-fn)
       :stop-note-fn stop-synth
       :freq-busses (vec (repeatedly num-notes control-bus))
-      :modwheel-bus modwheel-bus
+      :mod-wheel-bus mod-wheel-bus
       :pitch-bend-fn pitch-bend-fn)))
 
 

@@ -70,4 +70,10 @@
                 #(binding [event-data {:event    :pitch-bend
                                        :pb-value (-> % :data2 fix-pb)}]
                    (send state state-fn))
-                ::pitch-bend)))
+                ::pitch-bend)
+    (e/on-event [:midi :control-change]
+                #(when (= (:channel %) 0)
+                   (binding [event-data {:event    :mod-wheel
+                                         :mod-wheel-value (:data2-f %)}]
+                     (send state state-fn)))
+                ::mod-wheel)))
