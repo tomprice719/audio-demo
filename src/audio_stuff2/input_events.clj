@@ -1,6 +1,8 @@
 (ns audio-stuff2.input-events
   (:require [overtone.libs.event :as e]
-            [clojure.stacktrace :refer [print-stack-trace]]))
+            [clojure.stacktrace :refer [print-stack-trace]]
+            [audio-stuff2.debug :refer :all]
+            [clojure.repl :refer [pst]]))
 
 (def white-keys
   (vec
@@ -16,11 +18,17 @@
       (if black-key
         (+ black-key (* 5 octave))))))
 
+(defn fix-pb [raw-value]
+  (if (< raw-value 64)
+    (/ raw-value 63.0)
+    (/ (- raw-value 128) 64.0)))
 
 (def ^:dynamic event-data)
 
 (defn set-handlers [initial-state state-fn]
   (let [state (agent initial-state)]
+    (set-error-mode! state :continue)
+    (set-error-handler! state #(pst %2))
     (e/on-event [:midi :note-on]
                 #(binding [event-data {:event    :note-on
                                        :note-num (:note %)
@@ -57,4 +65,9 @@
                    (binding [event-data {:event          :black-note-off
                                          :black-note-num black-note-num}]
                      (send state state-fn)))
-                ::black-note-off)))
+                ::black-note-off)
+    (e/on-event [:midi :pitch-bend]
+                #(binding [event-data {:event    :pitch-bend
+                                       :pb-value (-> % :data2 fix-pb)}]
+                   (send state state-fn))
+                ::pitch-bend)))

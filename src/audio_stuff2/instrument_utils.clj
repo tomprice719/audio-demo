@@ -1,5 +1,6 @@
 (ns audio-stuff2.instrument-utils
   (:require [audio-stuff2.input-events :refer [event-data]]
+            [audio-stuff2.debug :refer [show labeller]]
             [overtone.core :refer :all]))
 
 (defprotocol Instrument
@@ -46,6 +47,14 @@
           (assoc this current-note-num nil))
       this)))
 
+(defn pitch-bend [instrument pb-value]
+  (if (:current-note-num instrument)
+    (let [[synth freq freq-bus]
+          (get-in instrument [:notes (:current-note-num instrument)])]
+      (control-bus-set! freq-bus (* freq (+ 1 (* pb-value 0.1))))
+      (assoc instrument :pitch-bend pb-value))
+    instrument))
+
 (defn add-note-data [{:keys [scale freq-busses] :as inst}]
   (assoc inst :note-data (mapv vector scale freq-busses)))
 
@@ -56,7 +65,8 @@
 
 (def instrument-fn-map {:note-on    note-on
                         :note-off   note-off
-                        :next-scale (comp add-note-data next-scale)})
+                        :next-scale (comp add-note-data next-scale)
+                        :pitch-bend pitch-bend})
 
 (defn update-instrument [[fn-key & args] instrument]
   (apply (instrument-fn-map fn-key) instrument args))
@@ -73,5 +83,6 @@
     :white-note-on [[(:current-instrument state) :note-on (:white-note-num event-data) (:velocity event-data)]]
     :white-note-off [[(:current-instrument state) :note-off (:white-note-num event-data)]]
     :black-note-on [[(:current-instrument state) :next-scale]]
+    :pitch-bend [[(:current-instrument state) :pitch-bend (:pb-value event-data)]]
     []))
 

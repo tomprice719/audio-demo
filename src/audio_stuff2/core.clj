@@ -28,14 +28,16 @@
 (defn play-fn [synth out-bus modwheel-bus]
   (fn [[freq freq-bus] pitch-bend velocity]
     (control-bus-set! freq-bus freq)
-    (synth [:tail notes-g] out-bus freq-bus modwheel-bus)))
+    [(synth [:tail notes-g] out-bus freq-bus modwheel-bus)
+     freq
+     freq-bus]))
 
 (defn play-fn2 [synth bus]
   (fn [freq freq-bus velocity]
     (let [[wt1 wt2 wt3 wt4] (get-wt-data freq)]
       (synth [:tail notes-g] bus freq wt1 wt2 wt3 wt4))))
 
-(defn stop-synth [synth]
+(defn stop-synth [[synth freq freq-bus]]
   (node-control synth [:gate 0])
   (after-delay 10000 #(kill synth)))
 
