@@ -47,13 +47,11 @@
           (assoc this current-note-num nil))
       this)))
 
-(defn pitch-bend [instrument pb-value]
-  (if (:current-note-num instrument)
-    (let [[synth freq freq-bus]
-          (get-in instrument [:notes (:current-note-num instrument)])]
-      (control-bus-set! freq-bus (* freq (+ 1 (* pb-value 0.1))))
-      (assoc instrument :pitch-bend pb-value))
-    instrument))
+(defn pitch-bend [{:keys [current-note-num pitch-bend-fn] :as inst} pb-value]
+  (when-let [[synth freq freq-bus]
+             (get-in inst [:notes current-note-num])]
+    (control-bus-set! freq-bus (pitch-bend-fn freq pb-value)))
+  (assoc inst :pitch-bend pb-value))
 
 (defn add-note-data [{:keys [scale freq-busses] :as inst}]
   (assoc inst :note-data (mapv vector scale freq-busses)))

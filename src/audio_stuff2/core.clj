@@ -9,7 +9,7 @@
             [overtone.sc.machinery.server.comms :refer [with-server-sync]]
             [overtone.sc.machinery.server.connection :refer [connection-status*]]
             [overtone.sc.machinery.allocator :refer [clear-ids]]
-            [audio-stuff2.debug :refer [show]])
+            [audio-stuff2.debug :refer [show labeller]])
   (:import (audio_stuff2.instrument_utils Poly-Instrument)))
 
 (def notes-g)
@@ -25,9 +25,9 @@
     (reverb-synth [:tail effects-g] bus 1 right-ir-spec right-wet-gain right-dry-gain)
     bus))
 
-(defn play-fn [synth out-bus modwheel-bus]
-  (fn [[freq freq-bus] pitch-bend velocity]
-    (control-bus-set! freq-bus freq)
+(defn play-fn [synth out-bus modwheel-bus pitch-bend-fn]
+  (fn [[freq freq-bus] pb-value velocity]
+    (control-bus-set! freq-bus (pitch-bend-fn freq pb-value))
     [(synth [:tail notes-g] out-bus freq-bus modwheel-bus)
      freq
      freq-bus]))
@@ -42,12 +42,14 @@
   (after-delay 10000 #(kill synth)))
 
 (defn add-synth [inst synth & bus-args]
-  (let [modwheel-bus (control-bus)]
+  (let [modwheel-bus (control-bus)
+        pitch-bend-fn (fn [freq pb-value] (* freq (+ 1 (* pb-value 0.1))))]
     (assoc inst
-      :play-note-fn (play-fn synth (apply make-bus bus-args) modwheel-bus)
+      :play-note-fn (play-fn synth (apply make-bus bus-args) modwheel-bus pitch-bend-fn)
       :stop-note-fn stop-synth
       :freq-busses (vec (repeatedly num-notes control-bus))
-      :modwheel-bus modwheel-bus)))
+      :modwheel-bus modwheel-bus
+      :pitch-bend-fn pitch-bend-fn)))
 
 
 (defn add-instruments [state]
