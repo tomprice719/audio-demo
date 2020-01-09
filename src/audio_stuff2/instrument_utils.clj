@@ -80,6 +80,7 @@
     (reduce consume-instrument-message state (instrument-handlers state))))
 
 (defn standard-instrument-handler [state]
+  (breakpoint "X" event-data)
   (case (:event event-data)
     :white-note-on [[(:current-instrument state) :note-on (:white-note-num event-data) (:velocity event-data)]]
     :white-note-off [[(:current-instrument state) :note-off (:white-note-num event-data)]]

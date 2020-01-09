@@ -1,14 +1,15 @@
 (ns audio-stuff2.breakpoints
   (:require
-    [clojure.core.async :refer [chan poll! >!! dropping-buffer]]))
+    [clojure.core.async :refer [chan poll! offer!]]
+    [debux.core :refer [dbg dbgn]]))
 
 (def ^:private buffer-size 1000)
 
-(def breakpoint-channel (atom (chan (dropping-buffer buffer-size))))
+(def breakpoint-channel (atom (chan buffer-size)))
 (def current-breakpoint)
 
 (defn put-context [context]
-  (>!! @breakpoint-channel context))
+  (offer! @breakpoint-channel context))
 
 (defmacro breakpoint [label & extra-symbols]
   (let [symbols (concat (keys &env) extra-symbols)
@@ -31,4 +32,4 @@
        ~expr)))
 
 (defn flush-bp []
-  (reset! breakpoint-channel (dropping-buffer buffer-size)))
+  (reset! breakpoint-channel (atom (chan buffer-size))))
