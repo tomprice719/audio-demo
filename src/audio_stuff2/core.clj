@@ -6,11 +6,11 @@
             [audio-stuff2.input-events :refer [set-handlers]]
             [audio-stuff2.scale-utils :refer [make-scale-vec add-scale-vec load-chords num-notes]]
             [audio-stuff2.reverb :refer [get-ir-spectrum fft-size reverb-synth]]
+            [audio-stuff2.breakpoints :refer [breakpoint]]
             [overtone.sc.machinery.server.comms :refer [with-server-sync]]
             [overtone.sc.machinery.server.connection :refer [connection-status*]]
             [overtone.sc.machinery.allocator :refer [clear-ids]]
-            [audio-stuff2.debug :refer [show labeller]])
-  (:import (audio_stuff2.instrument_utils Poly-Instrument)))
+            [debux.core :refer [dbg dbgn]]))
 
 (def notes-g)
 (def effects-g)

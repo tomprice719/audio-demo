@@ -7,5 +7,6 @@
                  [overtone "0.10.3"]
                  [org.clojure/tools.namespace "0.2.11"]
                  [com.github.wendykierp/JTransforms "3.0"]
-                 [clj-stacktrace "0.2.8"]]
+                 [philoskim/debux "0.6.2"]
+                 [org.clojure/core.async "0.6.532"]]
   :repl-options {:init-ns audio-stuff2.loader})

@@ -1,7 +1,6 @@
 (ns audio-stuff2.input-events
   (:require [overtone.libs.event :as e]
             [clojure.stacktrace :refer [print-stack-trace]]
-            [audio-stuff2.debug :refer :all]
             [clojure.repl :refer [pst]]))
 
 (def white-keys
@@ -23,7 +22,7 @@
     (/ raw-value 63.0)
     (/ (- raw-value 128) 64.0)))
 
-(def ^:dynamic event-data)
+(def ^:dynamic event-data 0)
 
 (defn set-handlers [initial-state state-fn]
   (let [state (agent initial-state)]

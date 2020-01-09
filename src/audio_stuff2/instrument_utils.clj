@@ -1,7 +1,7 @@
 (ns audio-stuff2.instrument-utils
   (:require [audio-stuff2.input-events :refer [event-data]]
-            [audio-stuff2.debug :refer [show labeller]]
-            [overtone.core :refer :all]))
+            [overtone.core :refer :all]
+            [audio-stuff2.breakpoints :refer [breakpoint]]))
 
 (defprotocol Instrument
   (note-on [this note-num velocity])
