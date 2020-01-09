@@ -2,7 +2,7 @@
   (:require
     [clojure.core.async :refer [chan poll! >!!]]))
 
-(def buffer-size 1000000)
+(def ^:private buffer-size 1000000)
 
 (def breakpoint-channel (atom (chan buffer-size)))
 (def current-breakpoint)
