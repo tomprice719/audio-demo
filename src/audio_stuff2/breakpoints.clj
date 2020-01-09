@@ -25,7 +25,7 @@
 
 (defmacro at-bp [expr]
   (let [context-sym (gensym)
-        context-keys (keys (:local-context audio-stuff2.breakpoints/current-breakpoint))]
+        context-keys (keys (:local-context current-breakpoint))]
     `(let [~context-sym (:local-context audio-stuff2.breakpoints/current-breakpoint)
            ~@(mapcat (fn [k] [k `(~context-sym '~k)]) context-keys)]
        ~expr)))
