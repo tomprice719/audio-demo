@@ -25,16 +25,16 @@
   (node-control synth [:gate 0])
   (after-delay 10000 #(kill synth)))
 
-(defmulti start-synth (fn [inst note-data pitch-bend velocity] (:type inst)))
+;(defmulti start-synth (fn [inst note-data pitch-bend velocity] (:type inst)))
 (defmulti note-on (fn [inst note-num velocity] (:type inst)))
 (defmulti note-off (fn [inst note-num] (:type inst)))
 
 (defn bent-pitch [freq pb-value] (* freq (+ 1 (* pb-value 0.1))))
 
-(defmethod start-synth :poly-instrument [{:keys [out-bus mod-wheel-bus synth]}
-                                         {:keys [freq freq-bus]}
-                                         pb-value
-                                         velocity]
+(defn start-synth [{:keys [out-bus mod-wheel-bus synth]}
+                   {:keys [freq freq-bus]}
+                   pb-value
+                   velocity]
   (control-bus-set! freq-bus (bent-pitch freq pb-value))
   (synth [:tail notes-g] out-bus freq-bus mod-wheel-bus))
 
