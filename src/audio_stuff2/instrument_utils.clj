@@ -39,7 +39,6 @@
   (synth [:tail notes-g] out-bus freq-bus mod-wheel-bus))
 
 (defmethod note-on :poly-instrument [{:keys [pitch-bend note-data] :as inst} note-num velocity]
-  (breakpoint "Note On")
   (if-let [d (and (not (get-in note-data [note-num :synth])) (get note-data note-num))]
     (-> inst
         (assoc-in [:note-data note-num :synth]
