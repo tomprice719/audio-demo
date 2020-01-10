@@ -32,4 +32,4 @@
        ~expr)))
 
 (defn flush-bp []
-  (reset! breakpoint-channel (atom (chan buffer-size))))
+  (reset! breakpoint-channel (chan buffer-size)))

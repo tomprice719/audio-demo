@@ -32,47 +32,47 @@
                 #(binding [event-data {:event    :note-on
                                        :note-num (:note %)
                                        :velocity (:velocity-f %)}]
-                   (send state state-fn))
+                   (send-off state state-fn))
                 ::note-on)
     (e/on-event [:midi :note-on]
                 #(when-let [white-note-num (white-keys (:note %))]
                    (binding [event-data {:event          :white-note-on
                                          :white-note-num white-note-num
                                          :velocity       (:velocity-f %)}]
-                     (send state state-fn)))
+                     (send-off state state-fn)))
                 ::white-note-on)
     (e/on-event [:midi :note-on]
                 #(when-let [black-note-num (black-keys (:note %))]
                    (binding [event-data {:event          :black-note-on
                                          :black-note-num black-note-num
                                          :velocity       (:velocity-f %)}]
-                     (send state state-fn)))
+                     (send-off state state-fn)))
                 ::black-note-on)
     (e/on-event [:midi :note-off]
                 #(binding [event-data {:event    :note-off
                                        :note-num (:note %)}]
-                   (send state state-fn))
+                   (send-off state state-fn))
                 ::note-off)
     (e/on-event [:midi :note-off]
                 #(when-let [white-note-num (white-keys (:note %))]
                    (binding [event-data {:event          :white-note-off
                                          :white-note-num white-note-num}]
-                     (send state state-fn)))
+                     (send-off state state-fn)))
                 ::white-note-off)
     (e/on-event [:midi :note-on]
                 #(when-let [black-note-num (black-keys (:note %))]
                    (binding [event-data {:event          :black-note-off
                                          :black-note-num black-note-num}]
-                     (send state state-fn)))
+                     (send-off state state-fn)))
                 ::black-note-off)
     (e/on-event [:midi :pitch-bend]
                 #(binding [event-data {:event    :pitch-bend
                                        :pb-value (-> % :data2 fix-pb)}]
-                   (send state state-fn))
+                   (send-off state state-fn))
                 ::pitch-bend)
     (e/on-event [:midi :control-change]
                 #(when (= (:channel %) 0)
-                   (binding [event-data {:event    :mod-wheel
+                   (binding [event-data {:event           :mod-wheel
                                          :mod-wheel-value (:data2-f %)}]
-                     (send state state-fn)))
+                     (send-off state state-fn)))
                 ::mod-wheel)))
