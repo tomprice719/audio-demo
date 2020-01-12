@@ -7,8 +7,7 @@
             [audio-stuff2.scale-utils :refer [make-scale-vec add-scale-vec load-chords num-notes]]
             [audio-stuff2.reverb :refer [get-ir-spectrum fft-size reverb-synth]]
             [audio-stuff2.breakpoints :refer [breakpoint]]
-            [overtone.sc.machinery.server.comms :refer [with-server-sync]]
-            [overtone.sc.machinery.server.connection :refer [connection-status*]]
+            [audio-stuff2.overtone-utils :refer [refresh-overtone]]
             [debux.core :refer [dbg dbgn]]))
 
 
@@ -24,10 +23,7 @@
                 }))
 
 (defn on-refresh []
-  (when (= @connection-status* :disconnected)
-    (boot-external-server)
-    (with-server-sync #(get-wt-data 2000.0)))
-  (stop-all)
+  (refresh-overtone)
   (-> {:current-instrument :keys}
       add-instruments
       (set-handlers (instrument-updater standard-instrument-handler))))

@@ -4,12 +4,10 @@
     [audio-stuff2.input-events :refer [event-data]]
     [audio-stuff2.scale-utils :refer [next-scale num-notes]]
     [audio-stuff2.breakpoints :refer [breakpoint]]
+    [audio-stuff2.overtone-utils :refer [notes-g effects-g]]
     [overtone.sc.machinery.server.comms :refer [with-server-sync]]
     [audio-stuff2.reverb :refer [get-ir-spectrum fft-size reverb-synth]]
     [debux.core :refer [dbg dbgn]]))
-
-(def notes-g (group "notes"))
-(def effects-g (group "effects" :after notes-g))
 
 (defn make-bus [left-ir left-wet-gain left-dry-gain
                 right-ir right-wet-gain right-dry-gain]
