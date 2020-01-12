@@ -1,13 +1,12 @@
 (ns audio-stuff2.core
-  (:require [overtone.core :refer :all]
-            [audio-stuff2.wavetables :refer [get-wt-data]]
-            [audio-stuff2.synths :refer [saw-keys]]
-            [audio-stuff2.instrument-utils :refer :all]
+  (:require [audio-stuff2.synths :refer [saw-keys]]
+            [audio-stuff2.instruments.control :refer [instrument-updater]]
+            [audio-stuff2.instruments.impl :refer [instrument-message-map standard-instrument-message-fn]]
+            [audio-stuff2.instruments.poly-instrument :refer [make-poly-instrument]]
             [audio-stuff2.input-events :refer [set-handlers]]
-            [audio-stuff2.scale-utils :refer [make-scale-vec add-scale-vec load-chords num-notes]]
-            [audio-stuff2.reverb :refer [get-ir-spectrum fft-size reverb-synth]]
-            [audio-stuff2.breakpoints :refer [breakpoint]]
+            [audio-stuff2.scale-utils :refer [make-scale-vec add-scale-vec load-chords]]
             [audio-stuff2.overtone-utils :refer [refresh-overtone]]
+            [audio-stuff2.breakpoints :refer [breakpoint]]
             [debux.core :refer [dbg dbgn]]))
 
 
@@ -26,4 +25,6 @@
   (refresh-overtone)
   (-> {:current-instrument :keys}
       add-instruments
-      (set-handlers (instrument-updater standard-instrument-handler))))
+      (set-handlers (instrument-updater
+                      standard-instrument-message-fn
+                      instrument-message-map))))
