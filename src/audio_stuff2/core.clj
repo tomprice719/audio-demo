@@ -1,7 +1,7 @@
 (ns audio-stuff2.core
   (:require [audio-stuff2.synths :refer [saw-keys]]
-            [audio-stuff2.instruments.control :refer [instrument-updater]]
-            [audio-stuff2.instruments.impl :refer [instrument-message-map standard-instrument-message-fn]]
+            [audio-stuff2.instruments.control :refer [handle-messages]]
+            [audio-stuff2.instruments.base-instrument :refer [message-handlers message-generator]]
             [audio-stuff2.instruments.poly-instrument :refer [make-poly-instrument]]
             [audio-stuff2.input-events :refer [set-handlers]]
             [audio-stuff2.scale-utils :refer [make-scale-vec add-scale-vec load-chords]]
@@ -25,6 +25,6 @@
   (refresh-overtone)
   (-> {:current-instrument :keys}
       add-instruments
-      (set-handlers (instrument-updater
-                      standard-instrument-message-fn
-                      instrument-message-map))))
+      (set-handlers (handle-messages
+                      message-generator
+                      message-handlers))))

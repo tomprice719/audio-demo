@@ -1,7 +1,7 @@
 (ns audio-stuff2.instruments.poly-instrument
   (:require [overtone.core :refer :all]
             [audio-stuff2.overtone-utils :refer [notes-g effects-g make-bus]]
-            [audio-stuff2.instruments.impl :refer [note-on note-off bent-pitch]]
+            [audio-stuff2.instruments.base-instrument :refer [note-on note-off bent-pitch]]
             [audio-stuff2.scale-utils :refer [num-notes]]))
 
 (defn start-synth [{:keys [out-bus mod-wheel-bus synth]}

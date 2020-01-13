@@ -1,18 +1,38 @@
 (ns audio-stuff2.instruments.control)
 
-(def ^:dynamic *instrument-message-map*)
+(defn instrument-reducer [message-handlers]
+  (fn [state [instrument-key fn-key & args]]
+    (update-in state [:instruments instrument-key]
+               #(apply (message-handlers fn-key) % args))))
 
-(defn update-instrument [[fn-key & args] instrument]
-  (apply (*instrument-message-map* fn-key) instrument args))
+(defn handle-messages [message-generator message-handlers]
+  (let [r (instrument-reducer message-handlers)]
+    (fn [state]
+      (reduce r state (message-generator state)))))
 
-(defn consume-instrument-message [state [instrument-key & message]]
-  (update-in state [:instruments instrument-key] (partial update-instrument message)))
+(comment
+  (->
+    (assoc )
+    (assoc state (recording "filename" instrument-reducer stop-fn))))
 
-(defn instrument-updater [instrument-messages-fn instrument-message-map]
-  (fn [state]
-    (binding [*instrument-message-map* instrument-message-map]
-      (reduce consume-instrument-message state (instrument-messages-fn state)))))
+(comment
+  (defn control-recording [state event-data key->recording-fn]
+    (update state :recording (key->recording-fn (TODO event-data)))))
 
+(comment
+  (defmulti event->messages
+            (fn [instrument event-data]
+              [(:input-type instrument)
+               (:event-type event-data)])))
+
+(comment
+  (fn [event-data state]
+    (let [messages (event->messages (:current-instrument state) event-data)]
+      (-> state
+          (reduce instrument-reducer messages)
+          (reduce recording-reducer messages)
+          (update-current-instrument event-data key->instrument)
+          (control-recording event-data key->recording-fn)))))
 
 ;(defn play-fn2 [synth bus]
 ;  (fn [freq freq-bus velocity]

@@ -1,4 +1,4 @@
-(ns audio-stuff2.instruments.impl
+(ns audio-stuff2.instruments.base-instrument
   (:require [audio-stuff2.overtone-utils :refer [notes-g effects-g get-ir-spectrum reverb-synth]]
             [audio-stuff2.input-events :refer [event-data]]
             [audio-stuff2.scale-utils :refer [next-scale]]
@@ -19,16 +19,17 @@
   (control-bus-set! mod-wheel-bus mod-wheel-value)
   inst)
 
-(defn standard-instrument-message-fn [state]
+(defn message-generator [{:keys [current-instrument]}]
   (case (:event event-data)
-    :white-note-on [[(:current-instrument state) :note-on (:white-note-num event-data) (:velocity event-data)]]
-    :white-note-off [[(:current-instrument state) :note-off (:white-note-num event-data)]]
-    :black-note-on [[(:current-instrument state) :next-scale]]
-    :pitch-bend [[(:current-instrument state) :pitch-bend (:pb-value event-data)]]
-    :mod-wheel [[(:current-instrument state) :mod-wheel (:mod-wheel-value event-data)]]
+    :white-note-on [[current-instrument :note-on (:white-note-num event-data) (:velocity event-data)]]
+    :white-note-off [[current-instrument :note-off (:white-note-num event-data)]]
+    :black-note-on [[current-instrument :next-scale]]
+    :pitch-bend [[current-instrument :pitch-bend (:pb-value event-data)]]
+    :mod-wheel [[current-instrument :mod-wheel (:mod-wheel-value event-data)]]
     []))
 
-(def instrument-message-map {:note-on    note-on
+
+(def message-handlers {:note-on          note-on
                              :note-off   note-off
                              :next-scale next-scale
                              :pitch-bend pitch-bend
