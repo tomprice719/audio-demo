@@ -33,9 +33,10 @@
                 this2)))
     inst))
 
-(defn make-poly-instrument [synth & bus-args]
+(defn make-poly-instrument [synth input-type & bus-args]
   {:type :poly-instrument
    :synth         synth
+   :input-type input-type
    :out-bus       (apply make-bus bus-args)
    :note-data     (mapv (partial hash-map :freq-bus)
                         (repeatedly num-notes control-bus))

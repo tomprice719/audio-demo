@@ -19,18 +19,8 @@
   (control-bus-set! mod-wheel-bus mod-wheel-value)
   inst)
 
-(defn message-generator [{:keys [current-instrument]}]
-  (case (:event event-data)
-    :white-note-on [[current-instrument :note-on (:white-note-num event-data) (:velocity event-data)]]
-    :white-note-off [[current-instrument :note-off (:white-note-num event-data)]]
-    :black-note-on [[current-instrument :next-scale]]
-    :pitch-bend [[current-instrument :pitch-bend (:pb-value event-data)]]
-    :mod-wheel [[current-instrument :mod-wheel (:mod-wheel-value event-data)]]
-    []))
-
-
-(def message-handlers {:note-on          note-on
-                             :note-off   note-off
-                             :next-scale next-scale
-                             :pitch-bend pitch-bend
-                             :mod-wheel  mod-wheel})
+(def message-handlers {:note-on    note-on
+                       :note-off   note-off
+                       :next-scale next-scale
+                       :pitch-bend pitch-bend
+                       :mod-wheel  mod-wheel})
