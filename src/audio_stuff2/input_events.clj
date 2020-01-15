@@ -22,8 +22,6 @@
     (/ raw-value 63.0)
     (/ (- raw-value 128) 64.0)))
 
-(def ^:dynamic event-data 0)
-
 (defn set-handlers [initial-state state-fn]
   (let [state (agent initial-state)]
     (set-error-mode! state :continue)

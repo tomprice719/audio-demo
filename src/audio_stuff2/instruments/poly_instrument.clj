@@ -26,11 +26,11 @@
 (defmethod note-off :poly-instrument [{:keys [current-note-num] :as inst} note-num]
   (if-let [synth (get-in inst [:note-data note-num :synth])]
     (do (stop-synth synth)
-        (as-> inst this2
-              (update-in inst [:note-data note-num] dissoc :synth)
+        (as-> inst inst2
+              (update-in inst2 [:note-data note-num] dissoc :synth)
               (if (= note-num current-note-num)
-                (dissoc this2 :current-note-num)
-                this2)))
+                (dissoc inst2 :current-note-num)
+                inst2)))
     inst))
 
 (defn make-poly-instrument [synth input-type & bus-args]

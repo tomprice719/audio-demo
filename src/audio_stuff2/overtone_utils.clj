@@ -6,8 +6,8 @@
   (:import (org.jtransforms.fft DoubleFFT_1D)
            (java.util Random)))
 
-(def notes-g)
-(def effects-g)
+(declare notes-g)
+(declare effects-g)
 
 ;; Noise oscillator stuff
 

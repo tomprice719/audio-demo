@@ -5,13 +5,9 @@
             [debux.core :refer [dbg dbgn]]
             [audio-stuff2.breakpoints :refer [breakpoint]]))
 
-(defn handle-messages [state messages]
-  (reduce
-    (fn [state [instrument-key fn-key & args]]
-      (update-in state [:instruments instrument-key]
-                 #(apply (message-handlers fn-key) % args)))
-    state
-    messages))
+(defn instrument-reducer [state [instrument-key fn-key & args]]
+  (update-in state [:instruments instrument-key]
+             #(apply (message-handlers fn-key) % args)))
 
 (defn make-music [instruments
                   initial-instrument]
@@ -25,7 +21,8 @@
                        current-instrument
                        current-instrument-key
                        event-data)]
-        (handle-messages state messages)))))
+        (as-> state state2
+              (reduce instrument-reducer state2 messages))))))
 
 (comment
   (-> {}

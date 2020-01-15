@@ -1,6 +1,5 @@
 (ns audio-stuff2.instruments.base-instrument
   (:require [audio-stuff2.overtone-utils :refer [notes-g effects-g get-ir-spectrum reverb-synth]]
-            [audio-stuff2.input-events :refer [event-data]]
             [audio-stuff2.scale-utils :refer [next-scale]]
             [overtone.core :refer :all]))
 
