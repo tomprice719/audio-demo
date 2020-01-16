@@ -17,8 +17,6 @@
      (add-scale-vec (make-scale-vec (load-chords "/home/tom/audio-stuff2/chords"))))
    })
 
-(def ^:dynamic my-var 5)
-
 (defn on-refresh []
   (refresh-overtone)
   (make-music

@@ -12,14 +12,16 @@
 (defn put-context [context]
   (offer! @breakpoint-channel context))
 
-(defmacro breakpoint [label & vars]
-  (let [symbols (concat (keys &env) vars)
-        local-context (zipmap (map (fn [sym] `(quote ~sym)) symbols) symbols)
-        breakpoint-data {:local-context local-context
+(defmacro breakpoint [label & var-symbols]
+  (let [local-symbols (keys &env)
+        local-context (zipmap (map (fn [sym] `(quote ~sym)) local-symbols) local-symbols)
+        breakpoint-data {:locals local-context
                          :label         label}]
     `(audio-stuff2.breakpoints/put-context
        (assoc ~breakpoint-data
-         :global-context
+         :defs
+         (zipmap [~@(map (fn [sym] `(var ~sym)) var-symbols)] [~@var-symbols])
+         :thread-bindings
          (assoc (get-thread-bindings) ~(var *ns*) ~*ns*)))))
 
 (defn next-bp []
@@ -35,11 +37,13 @@
 (defn eval-with-context
   [expr]
   (if current-breakpoint
-    (with-bindings (:global-context current-breakpoint)
-      (binding [*locals* (:local-context current-breakpoint)]
-        (eval
-          `(let ~(vec (mapcat #(list % `(*locals* '~%)) (keys *locals*)))
-             ~expr))))
+    (with-redefs-fn (:defs current-breakpoint)
+      (fn []
+        (with-bindings (:thread-bindings current-breakpoint)
+          (binding [*locals* (:locals current-breakpoint)]
+            (eval
+              `(let ~(vec (mapcat #(list % `(*locals* '~%)) (keys *locals*)))
+                 ~expr))))))
     (println "Not at a breakpoint.")))
 
 (defn dr-read
@@ -64,8 +68,8 @@
   (defmacro at-bp [expr]
     (defmacro at-bp [expr]
       (let [context-sym (gensym)
-            context-keys (keys (:local-context current-breakpoint))]
-        `(let [~context-sym (:local-context audio-stuff2.breakpoints/current-breakpoint)
+            context-keys (keys (:locals current-breakpoint))]
+        `(let [~context-sym (:locals audio-stuff2.breakpoints/current-breakpoint)
                ~@(mapcat (fn [k] [k `(~context-sym '~k)]) context-keys)]
            ~expr)))))
 
