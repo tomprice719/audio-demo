@@ -1,52 +1,93 @@
 (ns audio-stuff2.control
   (:require [audio-stuff2.input-events :refer [set-handlers]]
-            [audio-stuff2.instruments.base-instrument :refer [message-handlers]]
+            [audio-stuff2.instruments.base-instrument :refer [message-handlers initialize]]
             [audio-stuff2.instruments.message-generators :refer [generate-messages]]
+            [audio-stuff2.recording :refer [make-recording initial-events record-event]]
+            [clojure.repl :refer [pst]]
             [debux.core :refer [dbg dbgn]]
-            [audio-stuff2.breakpoints :refer [breakpoint]]))
+            [audio-stuff2.breakpoints :refer [breakpoint]]
+            [clojure.algo.generic.functor :refer [fmap]]
+            [audio-stuff2.overtone-utils :refer [refresh-overtone]]))
 
-(defn instrument-reducer [state [instrument-key fn-key & args]]
-  (update-in state [:instruments instrument-key]
-             #(apply (message-handlers fn-key) % args)))
+(declare state-agent)
+
+(defn instrument-reducer [instrument-state [instrument-key fn-key & args]]
+  (update instrument-state instrument-key
+          #(apply (message-handlers fn-key) % args)))
+
+(defn instrument-message-handler [{:keys [instruments] :as state} messages]
+  (assoc state :instruments (reduce instrument-reducer instruments messages)))
+
+(defn initialize-instruments [state]
+  (update state :instruments (partial fmap initialize)))
+
+(defn recording-play-fn [messages]
+  (send-off state-agent
+            (fn [state] (instrument-message-handler state messages))))
+
+(defn make-state-agent [instruments selected-instrument]
+  (def state-agent (-> {:instruments         instruments
+                        :initial-instruments instruments
+                        :cached-instruments  instruments
+                        :selected-instrument selected-instrument
+                        :recording           (make-recording recording-play-fn)}
+                       initialize-instruments
+                       agent))
+  (set-error-mode! state-agent :continue)
+  (set-error-handler! state-agent #(pst %2)))
+
+(defn get-instrument-messages [event-data state]
+  (let [selected-instrument-key (:selected-instrument state)
+        selected-instrument (-> state :instruments selected-instrument-key)]
+    (generate-messages
+      selected-instrument
+      selected-instrument-key
+      event-data)))
+
+(defn input-event-handler [event-data state]
+  (let [messages (get-instrument-messages event-data state)]
+    (-> state
+        (instrument-message-handler messages)
+        (update :recording record-event messages))))
 
 (defn make-music [instruments
                   initial-instrument]
+  (refresh-overtone)
+  (make-state-agent instruments initial-instrument)
   (set-handlers
-    {:instruments        instruments
-     :current-instrument initial-instrument}
-    (fn [event-data state]
-      (let [current-instrument-key (:current-instrument state)
-            current-instrument (-> state :instruments current-instrument-key)
-            messages (generate-messages
-                       current-instrument
-                       current-instrument-key
-                       event-data)]
-        (as-> state state2
-              (reduce instrument-reducer state2 messages))))))
+    state-agent
+    input-event-handler))
 
-(comment
-  (-> {}
-      (assoc instruments {})
-      (assoc state (recording "filename" handle-messages stop-fn))))
+(defn refresh-cached-instruments [{:keys [initial-instruments recording] :as state}]
+  (assoc state :cached-instruments
+               (reduce instrument-reducer
+                       initial-instruments
+                       (initial-events recording))))
 
-(comment
-  (defn control-recording [state event-data key->recording-fn]
-    (update state :recording (key->recording-fn (TODO event-data)))))
+(defn update-recording-time-offset [{:keys [initial-instruments] :as state} time-offset]
+  (-> state
+      (update :recording audio-stuff2.recording/update-time-offset time-offset)
+      refresh-cached-instruments))
 
-(comment
-  (defmulti event->messages
-            (fn [instrument event-data]
-              [(:input-type instrument)
-               (:event-type event-data)])))
+(defn stop-playing [{:keys [cached-instruments] :as state}]
+  (refresh-overtone)
+  (-> state
+      (update :recording audio-stuff2.recording/stop-playing)
+      (assoc :instruments cached-instruments)
+      initialize-instruments
+      ))
 
-(comment
-  (defn update-state [state messages]
-    (-> state
-        (handle-messages messages)
-        (record-messages messages)
-        (change-instrument event-data key->instrument)
-        (control-recording event-data key->recording-fn)))
+(defn start-playing [state]
+  (-> state
+      stop-playing
+      (update :recording audio-stuff2.recording/start-playing)))
 
-  (fn [event-data state]
-    (let [messages (event->messages (:current-instrument state) event-data)]
-      (update-state state messages))))
+(defn play-and-record [state]
+  (-> state
+      stop-playing
+      (update :recording audio-stuff2.recording/play-and-record)))
+
+(intern 'audio-stuff2.loader 'stop-playing #(send-off state-agent stop-playing))
+(intern 'audio-stuff2.loader 'start-playing #(send-off state-agent start-playing))
+(intern 'audio-stuff2.loader 'play-and-record #(send-off state-agent play-and-record))
+(intern 'audio-stuff2.loader 'get-recording #(:recording @state-agent))

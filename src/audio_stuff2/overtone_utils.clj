@@ -78,7 +78,6 @@
   (let [bus (audio-bus)
         left-ir-spec (with-server-sync #(get-ir-spectrum left-ir))
         right-ir-spec (with-server-sync #(get-ir-spectrum right-ir))]
-    (println bus)
     (reverb-synth [:tail effects-g] bus 0 left-ir-spec left-wet-gain left-dry-gain)
     (reverb-synth [:tail effects-g] bus 1 right-ir-spec right-wet-gain right-dry-gain)
     bus))
@@ -88,7 +87,7 @@
 (defn refresh-overtone []
   (when (= @connection-status* :disconnected)
     (boot-external-server))
-  (with-server-sync #(get-wt-data 2000.0))
-  (clear-all)
-  (def notes-g (group "notes"))
-  (def effects-g (group "effects" :after notes-g)))
+  (with-server-sync #(clear-all))
+  (with-server-sync #(do (get-wt-data 2000.0)
+                         (def notes-g (group "notes"))
+                         (def effects-g (group "effects" :after notes-g)))))

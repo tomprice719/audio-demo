@@ -5,6 +5,7 @@
 
 (defmulti note-on (fn [inst note-num velocity] (:type inst)))
 (defmulti note-off (fn [inst note-num] (:type inst)))
+(defmulti initialize :type)
 
 (defn bent-pitch [freq pb-value] (* freq (+ 1 (* pb-value 0.1))))
 

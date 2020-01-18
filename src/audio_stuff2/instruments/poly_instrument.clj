@@ -1,7 +1,10 @@
 (ns audio-stuff2.instruments.poly-instrument
   (:require [overtone.core :refer :all]
             [audio-stuff2.overtone-utils :refer [notes-g effects-g make-bus]]
-            [audio-stuff2.instruments.base-instrument :refer [note-on note-off bent-pitch]]
+            [audio-stuff2.instruments.base-instrument :refer [note-on
+                                                              note-off
+                                                              bent-pitch
+                                                              initialize]]
             [audio-stuff2.scale-utils :refer [num-notes]]))
 
 (defn start-synth [{:keys [out-bus mod-wheel-bus synth]}
@@ -33,13 +36,20 @@
                 inst2)))
     inst))
 
+(defn add-freq-busses [note-data]
+  (mapv #(assoc % :freq-bus (control-bus)) note-data))
+
+(defmethod initialize :poly-instrument [{:keys [bus-args] :as instrument}]
+  (-> instrument
+      (update :note-data add-freq-busses)
+      (assoc :out-bus (apply make-bus bus-args)
+             :mod-wheel-bus (control-bus))))
+
 (defn make-poly-instrument [synth input-type & bus-args]
-  {:type :poly-instrument
-   :synth         synth
+  {:type       :poly-instrument
+   :synth      synth
    :input-type input-type
-   :out-bus       (apply make-bus bus-args)
-   :note-data     (mapv (partial hash-map :freq-bus)
-                        (repeatedly num-notes control-bus))
-   :mod-wheel-bus (control-bus)
-   :pitch-bend    0})
+   :bus-args   bus-args
+   :pitch-bend 0
+   :note-data  (vec (repeat num-notes {}))})
 
