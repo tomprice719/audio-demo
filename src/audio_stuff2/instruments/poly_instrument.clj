@@ -4,15 +4,17 @@
             [audio-stuff2.instruments.base-instrument :refer [note-on
                                                               note-off
                                                               bent-pitch
-                                                              initialize]]
+                                                              initialize
+                                                              audible]]
             [audio-stuff2.scale-utils :refer [num-notes]]))
 
 (defn start-synth [{:keys [out-bus mod-wheel-bus synth]}
                    {:keys [freq freq-bus]}
                    pb-value
                    velocity]
-  (control-bus-set! freq-bus (bent-pitch freq pb-value))
-  (synth [:tail notes-g] out-bus freq-bus mod-wheel-bus))
+  (when audible
+    (control-bus-set! freq-bus (bent-pitch freq pb-value))
+    (synth [:tail notes-g] out-bus freq-bus mod-wheel-bus)))
 
 (defmethod note-on :poly-instrument [{:keys [pitch-bend note-data] :as inst} note-num velocity]
   (if-let [d (and (not (get-in note-data [note-num :synth])) (get note-data note-num))]
@@ -23,8 +25,9 @@
     inst))
 
 (defn stop-synth [synth]
-  (node-control synth [:gate 0])
-  (after-delay 10000 #(kill synth)))
+  (when audible
+    (node-control synth [:gate 0])
+    (after-delay 10000 #(kill synth))))
 
 (defmethod note-off :poly-instrument [{:keys [current-note-num] :as inst} note-num]
   (if-let [synth (get-in inst [:note-data note-num :synth])]
@@ -39,11 +42,11 @@
 (defn add-freq-busses [note-data]
   (mapv #(assoc % :freq-bus (control-bus)) note-data))
 
-(defmethod initialize :poly-instrument [{:keys [bus-args] :as instrument}]
+(defmethod initialize :poly-instrument [{:keys [bus-args mod-wheel-value] :as instrument}]
   (-> instrument
       (update :note-data add-freq-busses)
       (assoc :out-bus (apply make-bus bus-args)
-             :mod-wheel-bus (control-bus))))
+             :mod-wheel-bus (doto (control-bus) (control-bus-set! mod-wheel-value)))))
 
 (defn make-poly-instrument [synth input-type & bus-args]
   {:type       :poly-instrument
@@ -51,5 +54,6 @@
    :input-type input-type
    :bus-args   bus-args
    :pitch-bend 0
+   :mod-wheel-value 0
    :note-data  (vec (repeat num-notes {}))})
 

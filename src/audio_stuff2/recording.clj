@@ -29,12 +29,12 @@
 
 (defn start-playing [{:keys [events play-fn time-offset] :as recording}]
   (let [stpe (Executors/newScheduledThreadPool 1)
-        now (System/nanoTime)]
+        start-time (- (System/nanoTime) time-offset)]
     (->> (seq events)
          (drop-while (partial before? time-offset))
-         (schedule-recursively stpe play-fn now))
+         (schedule-recursively stpe play-fn start-time))
     (assoc recording :stpe stpe
-                     :recording-start-time (- now time-offset))))
+                     :recording-start-time start-time)))
 
 (defn play-and-record [recording]
   (-> recording
@@ -47,13 +47,16 @@
     recording))
 
 (defn update-time-offset [recording time-offset]
-  ((assoc recording :time-offset time-offset)))
+  (assoc recording :time-offset (long (* time-offset 1000000000))))
 
 (defn initial-events [{:keys [events time-offset]}]
   (->> (seq events)
        (take-while (partial before? time-offset))
-       (map second)
-       flatten))
+       (mapcat second)))
+
+(defn current-time [{:keys [recording-start-time]}]
+  (/ (- (System/nanoTime) recording-start-time)
+     1000000000.0))
 
 (defn make-recording [play-fn]
   {:time-offset         0

@@ -23,7 +23,7 @@
 (defn set-handlers [state-agent state-fn]
   (let [handle
         (fn [event-data]
-          (send-off state-agent (partial state-fn event-data)))]
+          (send-off state-agent state-fn event-data))]
     (e/on-event [:midi :note-on]
                 #(handle {:event    :note-on
                           :note-num (:note %)

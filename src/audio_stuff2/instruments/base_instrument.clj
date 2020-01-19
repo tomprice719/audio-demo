@@ -3,6 +3,8 @@
             [audio-stuff2.scale-utils :refer [next-scale]]
             [overtone.core :refer :all]))
 
+(def ^:dynamic audible true)
+
 (defmulti note-on (fn [inst note-num velocity] (:type inst)))
 (defmulti note-off (fn [inst note-num] (:type inst)))
 (defmulti initialize :type)
@@ -11,13 +13,15 @@
 
 (defn pitch-bend [{:keys [current-note-num] :as inst} pb-value]
   (when-let [{:keys [freq freq-bus]}
-             (get-in inst [:note-data current-note-num])]
+             (and audible
+                  (get-in inst [:note-data current-note-num]))]
     (control-bus-set! freq-bus (bent-pitch freq pb-value)))
   (assoc inst :pitch-bend pb-value))
 
 (defn mod-wheel [{:keys [mod-wheel-bus] :as inst} mod-wheel-value]
-  (control-bus-set! mod-wheel-bus mod-wheel-value)
-  inst)
+  (when audible
+    (control-bus-set! mod-wheel-bus mod-wheel-value))
+  (assoc inst :mod-wheel-value mod-wheel-value))
 
 (def message-handlers {:note-on    note-on
                        :note-off   note-off
