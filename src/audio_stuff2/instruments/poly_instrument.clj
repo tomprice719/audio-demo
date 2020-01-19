@@ -12,15 +12,15 @@
                    {:keys [freq freq-bus]}
                    pb-value
                    velocity]
-  (when audible
-    (control-bus-set! freq-bus (bent-pitch freq pb-value))
-    (synth [:tail notes-g] out-bus freq-bus mod-wheel-bus)))
+  (control-bus-set! freq-bus (bent-pitch freq pb-value))
+  (synth [:tail notes-g] out-bus freq-bus mod-wheel-bus))
 
 (defmethod note-on :poly-instrument [{:keys [pitch-bend note-data] :as inst} note-num velocity]
   (if-let [d (and (not (get-in note-data [note-num :synth])) (get note-data note-num))]
     (-> inst
         (assoc-in [:note-data note-num :synth]
-                  (start-synth inst d pitch-bend velocity))
+                  (when audible
+                    (start-synth inst d pitch-bend velocity)))
         (assoc :current-note-num note-num))
     inst))
 
