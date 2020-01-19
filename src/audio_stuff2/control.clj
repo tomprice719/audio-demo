@@ -54,14 +54,6 @@
         (instrument-message-handler messages)
         (update :recording record-event messages))))
 
-(defn make-music [instruments
-                  initial-instrument]
-  (refresh-overtone)
-  (make-state-agent instruments initial-instrument)
-  (set-handlers
-    state-agent
-    input-event-handler))
-
 (defn refresh-cached-instruments [{:keys [initial-instruments recording] :as state}]
   (assoc state :cached-instruments
                (binding [audible false]
@@ -93,10 +85,23 @@
       stop-playing
       (update :recording audio-stuff2.recording/play-and-record)))
 
-(intern 'audio-stuff2.loader 'stop-playing #(send-off state-agent stop-playing))
-(intern 'audio-stuff2.loader 'start-playing #(send-off state-agent start-playing))
-(intern 'audio-stuff2.loader 'play-and-record #(send-off state-agent play-and-record))
-(intern 'audio-stuff2.loader 'update-recording-time-offset
-        #(send-off state-agent update-recording-time-offset %))
-(intern 'audio-stuff2.loader 'print-time #(-> @state-agent :recording current-time println))
-(intern 'audio-stuff2.loader 'get-recording #(:recording @state-agent))
+(defmacro defintern [name args & forms]
+  `(intern *ns* '~name (fn [~@(rest args)]
+                         (send-off state-agent
+                                   (fn ~args ~@forms)
+                                   ~@(rest args))
+                         nil)))
+
+(defn make-music [instruments
+                  initial-instrument]
+  (refresh-overtone)
+  (make-state-agent instruments initial-instrument)
+  (set-handlers
+    state-agent
+    input-event-handler)
+  (defintern play [state] (start-playing state))
+  (defintern stop [state] (stop-playing state))
+  (defintern rec [state] (play-and-record state))
+  (defintern time [state] (-> state :recording current-time println))
+  (defintern change-time [state time] (update-recording-time-offset state time)))
+
