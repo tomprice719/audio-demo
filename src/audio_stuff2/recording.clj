@@ -6,7 +6,7 @@
 
 (defn schedule-recursively [stpe play-fn absolute-start-time events]
   (let [now (- (System/nanoTime) absolute-start-time)
-        [head [[tail-time _] :as tail]] (split-at 3 events)]
+        [head [[tail-time _] :as tail]] (split-at 100 events)]
     (when (not-empty tail)
       (.schedule stpe
                  #(schedule-recursively stpe play-fn absolute-start-time tail)

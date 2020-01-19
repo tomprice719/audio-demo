@@ -68,12 +68,11 @@
       refresh-cached-instruments))
 
 (defn stop-playing [{:keys [cached-instruments] :as state}]
-  (refresh-overtone)
   (-> state
       (update :recording audio-stuff2.recording/stop-playing)
       (assoc :instruments cached-instruments)
-      initialize-instruments
-      ))
+      refresh-overtone
+      initialize-instruments))
 
 (defn start-playing [state]
   (-> state
@@ -84,6 +83,14 @@
   (-> state
       stop-playing
       (update :recording audio-stuff2.recording/play-and-record)))
+
+(defn clear-recording [{:keys [initial-instruments] :as state}]
+  (-> state
+      (update :recording stop-playing)
+      (assoc :recording (make-recording recording-play-fn)
+             :cached-instruments initial-instruments
+             :instruments initial-instruments)
+      initialize-instruments))
 
 (defmacro defintern [name args & forms]
   `(intern *ns* '~name (fn [~@(rest args)]
@@ -102,6 +109,7 @@
   (defintern play [state] (start-playing state))
   (defintern stop [state] (stop-playing state))
   (defintern rec [state] (play-and-record state))
-  (defintern time [state] (-> state :recording current-time println))
-  (defintern change-time [state time] (update-recording-time-offset state time)))
+  (defintern clear [state] (clear-recording state))
+  (defintern get-time [state] (-> state :recording current-time println))
+  (defintern set-time [state time] (update-recording-time-offset state time)))
 

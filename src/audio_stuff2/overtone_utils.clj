@@ -84,10 +84,11 @@
 
 ;; Refresh
 
-(defn refresh-overtone []
-  (when (= @connection-status* :disconnected)
-    (boot-external-server))
-  (with-server-sync #(clear-all))
-  (with-server-sync #(do (get-wt-data 2000.0)
-                         (def notes-g (group "notes"))
-                         (def effects-g (group "effects" :after notes-g)))))
+(defn refresh-overtone
+  ([x] (do (refresh-overtone) x))
+  ([] (when (= @connection-status* :disconnected)
+        (boot-external-server))
+   (with-server-sync #(clear-all))
+   (with-server-sync #(do (get-wt-data 2000.0)
+                          (def notes-g (group "notes"))
+                          (def effects-g (group "effects" :after notes-g))))))
