@@ -28,17 +28,6 @@
   (send-off state-agent
             (fn [state] (instrument-message-handler state messages))))
 
-(defn make-state-agent [instruments selected-instrument path]
-  (def state-agent (-> {:instruments         instruments
-                        :initial-instruments instruments
-                        :cached-instruments  instruments
-                        :selected-instrument selected-instrument
-                        :recording           (make-recording recording-play-fn path)}
-                       initialize-instruments
-                       agent))
-  (set-error-mode! state-agent :continue)
-  (set-error-handler! state-agent #(pst %2)))
-
 (defn get-instrument-messages [state event-data]
   (let [selected-instrument-key (:selected-instrument state)
         selected-instrument (-> state :instruments selected-instrument-key)]
@@ -47,19 +36,19 @@
       selected-instrument-key
       event-data)))
 
-(defn apply-keymap-fn [state {:keys [event key-char]} keymap]
+(defn apply-keymap-fn [{:keys [keymap] :as state} {:keys [event key-char]}]
   (if-let
     [func (and (= event :key-pressed)
                (keymap key-char))]
     (func state)
     state))
 
-(defn input-event-handler [state event-data keymap]
+(defn input-event-handler [state event-data]
   (let [messages (get-instrument-messages state event-data)]
     (-> state
         (instrument-message-handler messages)
         (update :recording record-event messages)
-        (apply-keymap-fn event-data keymap))))
+        (apply-keymap-fn event-data))))
 
 (defn refresh-cached-instruments [{:keys [initial-instruments recording] :as state}]
   (assoc state :cached-instruments
@@ -137,17 +126,31 @@
   (fn [state]
     (assoc state :selected-instrument instrument-key)))
 
+(defn make-state-agent [instruments instrument-keymap selected-instrument path]
+  (def state-agent (-> {:instruments         instruments
+                        :initial-instruments instruments
+                        :cached-instruments  instruments
+                        :selected-instrument selected-instrument
+                        :recording           (make-recording recording-play-fn path)
+                        :keymap (merge default-keymap
+                                       (fmap instrument-keymap-fn instrument-keymap))}
+                       initialize-instruments
+                       agent))
+  (set-error-mode! state-agent :continue)
+  (set-error-handler! state-agent #(pst %2)))
+
 (defn make-music [instruments
                   instrument-keymap
                   initial-instrument
                   path]
   (refresh-overtone)
-  (make-state-agent instruments initial-instrument path)
+  (make-state-agent
+    instruments
+    instrument-keymap
+    initial-instrument path)
   (set-handlers
     state-agent
-    input-event-handler
-    (merge default-keymap
-           (fmap instrument-keymap-fn instrument-keymap)))
+    input-event-handler)
   (intern-updates
     ['play start-playing-wrapper]
     ['stop stop-playing-wrapper]

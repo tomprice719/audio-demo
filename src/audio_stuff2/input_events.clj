@@ -23,12 +23,12 @@
     (/ raw-value 63.0)
     (/ (- raw-value 128) 64.0)))
 
-(defn set-handlers [state-agent state-fn & args]
+(defn set-handlers [state-agent state-fn]
   (def window (frame :title "frame" :size [300 :by 300]))
   (show! window)
   (let [handle
         (fn [event-data]
-          (apply send-off state-agent state-fn event-data args))]
+          (send-off state-agent state-fn event-data))]
     (e/on-event [:midi :note-on]
                 #(handle {:event    :note-on
                           :note-num (:note %)
