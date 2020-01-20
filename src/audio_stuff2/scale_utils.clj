@@ -1,12 +1,6 @@
 (ns audio-stuff2.scale-utils)
 
-(def num-notes 50)
-
-(defn load-chords [filename]
-  ((fn [x] (println x) x)
-   (for [line (clojure.string/split-lines (slurp filename))
-         :when (not= (first line) \#)]
-     (map read-string (clojure.string/split line #"\s+")))))
+(def num-notes 100)
 
 (defn combination-chord [[fundamental-freq & chords]]
   (->> (for [x (range num-notes) y chords]
@@ -16,7 +10,7 @@
        (take num-notes)
        vec))
 
-(defn make-scale-vec [chord-seq]
+(defn combination-chord-prog [chord-seq]
   (mapv combination-chord chord-seq))
 
 (defn update-scale [{:keys [note-data] :as inst} new-scale]
@@ -28,7 +22,7 @@
         (update-scale (scale-vec new-index))
         (assoc :scale-index new-index))))
 
-(defn add-scale-vec [inst scale-vec]
+(defn add-scale-prog [inst scale-vec]
   (-> inst
       (assoc :scale-index 0
              :scale-vec scale-vec)

@@ -2,8 +2,6 @@
   (:import (java.util.concurrent TimeUnit)
            (java.util.concurrent Executors)))
 
-;TODO: load, save
-
 (defn schedule-recursively [stpe play-fn absolute-start-time events]
   (let [now (- (System/nanoTime) absolute-start-time)
         [head [[tail-time _] :as tail]] (split-at 100 events)]
@@ -88,17 +86,4 @@
   (->> (clojure.java.io/file path "counter")
        slurp
        (revert-recording recording)))
-
-(comment
-
-  (defn save-recording [recording path]
-    (println "saving")
-    (let [[name num] (read-string (slurp clojure.java.io/file path "counter"))]
-      (spit (str name (inc num)) (vec @sound-events))
-      (spit namefile-name [name (inc num)])))
-
-  (defn load-recording [path]
-    (println "loading")
-    (let [[name num] (read-string (slurp namefile-name))]
-      (reset! sound-events (read-string (slurp (str name num)))))))
 
