@@ -2,7 +2,7 @@
 
 (def num-notes 100)
 
-(defn combination-chord [[fundamental-freq & chords]]
+(defn combination-chord [num-notes [fundamental-freq & chords]]
   (->> (for [x (range num-notes) y chords]
          (* (inc x) y fundamental-freq))
        sort
@@ -10,8 +10,8 @@
        (take num-notes)
        vec))
 
-(defn combination-chord-prog [chord-seq]
-  (mapv combination-chord chord-seq))
+(defn combination-chord-prog [num-notes chord-seq]
+  (mapv (partial combination-chord num-notes) chord-seq))
 
 (defn update-scale [{:keys [note-data] :as inst} new-scale]
   (assoc inst :note-data (mapv #(assoc %1 :freq %2) note-data new-scale)))

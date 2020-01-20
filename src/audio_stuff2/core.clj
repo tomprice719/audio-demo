@@ -22,13 +22,13 @@
      (make-poly-instrument saw-keys :white-notes
                            "~/impulse-responses/left1.wav" 1.0 0.0
                            "~/impulse-responses/right1.wav" 1.0 0.0)
-     (add-scale-prog (combination-chord-prog chords)))
+     (add-scale-prog (combination-chord-prog 50 chords)))
    :square-keys
    (->
      (make-poly-instrument square-keys :white-notes
                            "~/impulse-responses/left1.wav" 1.0 0.0
                            "~/impulse-responses/right1.wav" 1.0 0.0)
-     (add-scale-prog (combination-chord-prog chords)))
+     (add-scale-prog (combination-chord-prog 50 chords)))
    })
 
 (defn on-refresh []

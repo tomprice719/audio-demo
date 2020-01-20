@@ -49,11 +49,11 @@
              :mod-wheel-bus (doto (control-bus) (control-bus-set! mod-wheel-value)))))
 
 (defn make-poly-instrument [synth input-type & bus-args]
-  {:type       :poly-instrument
-   :synth      synth
-   :input-type input-type
-   :bus-args   bus-args
-   :pitch-bend 0
+  {:type            :poly-instrument
+   :synth           synth
+   :input-type      input-type
+   :bus-args        bus-args
+   :pitch-bend      0
    :mod-wheel-value 0
-   :note-data  (vec (repeat num-notes {}))})
+   :note-data       (repeat {})})
 
