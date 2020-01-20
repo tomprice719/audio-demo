@@ -58,9 +58,47 @@
   (/ (- (System/nanoTime) recording-start-time)
      1000000000.0))
 
-(defn make-recording [play-fn]
+(defn make-recording [play-fn path]
   {:time-offset         0
    :currently-recording false
    :events              (sorted-map)
    :play-fn             play-fn
+   :path path
    })
+
+(defn save-recording [{:keys [path events]}]
+  (let [counter-file (clojure.java.io/file path "counter")
+        counter-num (if (.exists counter-file)
+                      (inc (read-string (slurp counter-file)))
+                      0)]
+    (spit (clojure.java.io/file path (str counter-num))
+          (seq events))
+    (spit counter-file counter-num)
+    (println "Now at file " counter-num)))
+
+(defn revert-recording [{:keys [path] :as recording} file-num]
+  (->> (str file-num)
+       (clojure.java.io/file path)
+       slurp
+       read-string
+       (into (sorted-map))
+       (assoc recording :events)))
+
+(defn load-recording [{:keys [path] :as recording}]
+  (->> (clojure.java.io/file path "counter")
+       slurp
+       (revert-recording recording)))
+
+(comment
+
+  (defn save-recording [recording path]
+    (println "saving")
+    (let [[name num] (read-string (slurp clojure.java.io/file path "counter"))]
+      (spit (str name (inc num)) (vec @sound-events))
+      (spit namefile-name [name (inc num)])))
+
+  (defn load-recording [path]
+    (println "loading")
+    (let [[name num] (read-string (slurp namefile-name))]
+      (reset! sound-events (read-string (slurp (str name num)))))))
+

@@ -16,4 +16,4 @@
    })
 
 (defn on-refresh []
-  (make-music instruments :keys))
+  (make-music instruments :keys "/home/tom/new-recordings"))
