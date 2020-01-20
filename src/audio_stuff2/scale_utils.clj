@@ -1,7 +1,5 @@
 (ns audio-stuff2.scale-utils)
 
-(def num-notes 100)
-
 (defn combination-chord [num-notes [fundamental-freq & chords]]
   (->> (for [x (range num-notes) y chords]
          (* (inc x) y fundamental-freq))

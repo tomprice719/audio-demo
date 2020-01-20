@@ -5,8 +5,7 @@
                                                               note-off
                                                               bent-pitch
                                                               initialize
-                                                              audible]]
-            [audio-stuff2.scale-utils :refer [num-notes]]))
+                                                              audible]]))
 
 (defn start-synth [{:keys [out-bus mod-wheel-bus synth]}
                    {:keys [freq freq-bus]}
