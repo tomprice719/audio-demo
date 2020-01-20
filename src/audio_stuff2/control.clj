@@ -1,5 +1,5 @@
 (ns audio-stuff2.control
-  (:require [audio-stuff2.input-events :refer [set-handlers]]
+  (:require [audio-stuff2.input-events :refer [set-handlers close-window]]
             [audio-stuff2.instruments.base-instrument :refer [message-handlers initialize audible]]
             [audio-stuff2.instruments.message-generators :refer [generate-messages]]
             [audio-stuff2.recording :refer [make-recording
@@ -47,11 +47,19 @@
       selected-instrument-key
       event-data)))
 
-(defn input-event-handler [state event-data]
+(defn apply-keymap-fn [state {:keys [event key-char]} keymap]
+  (if-let
+    [func (and (= event :key-pressed)
+               (keymap key-char))]
+    (func state)
+    state))
+
+(defn input-event-handler [state event-data keymap]
   (let [messages (get-instrument-messages state event-data)]
     (-> state
         (instrument-message-handler messages)
-        (update :recording record-event messages))))
+        (update :recording record-event messages)
+        (apply-keymap-fn event-data keymap))))
 
 (defn refresh-cached-instruments [{:keys [initial-instruments recording] :as state}]
   (assoc state :cached-instruments
@@ -120,14 +128,26 @@
             (fn [& args]
               (apply func @state-agent args)))))
 
+(def default-keymap
+  {\1 start-playing-wrapper
+   \2 play-and-record-wrapper
+   \3 stop-playing-wrapper})
+
+(defn instrument-keymap-fn [instrument-key]
+  (fn [state]
+    (assoc state :selected-instrument instrument-key)))
+
 (defn make-music [instruments
+                  instrument-keymap
                   initial-instrument
                   path]
   (refresh-overtone)
   (make-state-agent instruments initial-instrument path)
   (set-handlers
     state-agent
-    input-event-handler)
+    input-event-handler
+    (merge default-keymap
+           (fmap instrument-keymap-fn instrument-keymap)))
   (intern-updates
     ['play start-playing-wrapper]
     ['stop stop-playing-wrapper]
@@ -142,4 +162,7 @@
                  (current-time recording))]
     ['get-recording-info (fn [{:keys [recording]} k]
                            (recording k))]))
+
+(defn shutdown []
+  (close-window))
 

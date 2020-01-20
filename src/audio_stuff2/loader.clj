@@ -5,7 +5,8 @@
             [audio-stuff2.breakpoints :refer :all]))
 
 (defn refresh []
-  (println "abc")
+  (when (find-ns 'audio-stuff2.control)
+    ((ns-resolve 'audio-stuff2.control 'shutdown)))
   (flush-bp)
   (clojure.tools.namespace.repl/refresh
     :after 'audio-stuff2.core/on-refresh))

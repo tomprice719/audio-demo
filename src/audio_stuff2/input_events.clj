@@ -1,5 +1,8 @@
 (ns audio-stuff2.input-events
-  (:require [overtone.libs.event :as e]))
+  (:require [overtone.libs.event :as e]
+            [seesaw.core :refer [native! show! dispose! listen frame]]))
+
+(def window nil)
 
 (def white-keys
   (vec
@@ -20,10 +23,12 @@
     (/ raw-value 63.0)
     (/ (- raw-value 128) 64.0)))
 
-(defn set-handlers [state-agent state-fn]
+(defn set-handlers [state-agent state-fn & args]
+  (def window (frame :title "frame" :size [300 :by 300]))
+  (show! window)
   (let [handle
         (fn [event-data]
-          (send-off state-agent state-fn event-data))]
+          (apply send-off state-agent state-fn event-data args))]
     (e/on-event [:midi :note-on]
                 #(handle {:event    :note-on
                           :note-num (:note %)
@@ -63,4 +68,17 @@
                 #(when (= (:channel %) 0)
                    (handle {:event           :mod-wheel
                             :mod-wheel-value (:data2-f %)}))
-                ::mod-wheel)))
+                ::mod-wheel)
+    (listen window
+            :key-pressed
+            #(handle {:event    :key-pressed
+                      :key-code (.getKeyCode %)
+                      :key-char (.getKeyChar %)})
+            :key-released
+            #(handle {:event    :key-released
+                      :key-code (.getKeyCode %)
+                      :key-char (.getKeyChar %)}))))
+
+(defn close-window []
+  (when window
+    (dispose! window)))
