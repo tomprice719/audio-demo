@@ -25,7 +25,7 @@
                             :let [d (min i (- (* 2 buffer-length) i))]]
                         (if (and (> d 1)
                                  (< (* d freq) max-freq))
-                          (/ (.nextGaussian randomObject) (Math/pow d 1))
+                          (/ (.nextGaussian randomObject) d)
                           0)))
         b (buffer (* 2 buffer-length))]
     (.complexForward fftObject a)

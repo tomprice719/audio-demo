@@ -1,6 +1,8 @@
 (ns audio-stuff2.core
-  (:require [audio-stuff2.synths :refer [saw-keys square-keys]]
-            [audio-stuff2.instruments.poly-instrument :refer [make-poly-instrument]]
+  (:require [audio-stuff2.synths :refer [saw-keys square-keys wt-keys]]
+            [audio-stuff2.instruments.poly-instrument
+             :refer [make-poly-instrument make-wt-poly-instrument]]
+            [audio-stuff2.instruments.mono-instrument :refer [make-mono-instrument]]
             [audio-stuff2.scale-utils :refer [combination-chord-prog add-scale-prog]]
             [audio-stuff2.breakpoints :refer [breakpoint]]
             [audio-stuff2.control :refer [make-music]]
@@ -17,15 +19,21 @@
    [400.0 1/10]])
 
 (def instruments
-  {:saw-keys
+  {:saw-poly
    (->
      (make-poly-instrument saw-keys :white-notes
                            "~/impulse-responses/left1.wav" 1.0 0.0
                            "~/impulse-responses/right1.wav" 1.0 0.0)
      (add-scale-prog (combination-chord-prog 50 chords)))
-   :square-keys
+   :square-mono
    (->
-     (make-poly-instrument square-keys :white-notes
+     (make-mono-instrument square-keys :white-notes
+                           "~/impulse-responses/left1.wav" 1.0 0.0
+                           "~/impulse-responses/right1.wav" 1.0 0.0)
+     (add-scale-prog (combination-chord-prog 50 chords)))
+   :wt-poly
+   (->
+     (make-wt-poly-instrument wt-keys :white-notes
                            "~/impulse-responses/left1.wav" 1.0 0.0
                            "~/impulse-responses/right1.wav" 1.0 0.0)
      (add-scale-prog (combination-chord-prog 50 chords)))
@@ -33,6 +41,6 @@
 
 (defn on-refresh []
   (make-music instruments
-              {\q :saw-keys, \w :square-keys}
-              :saw-keys
+              {\q :saw-poly, \w :square-mono, \e :wt-poly}
+              :saw-poly
               "/home/tom/new-recordings"))
