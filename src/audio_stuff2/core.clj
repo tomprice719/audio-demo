@@ -1,5 +1,5 @@
 (ns audio-stuff2.core
-  (:require [audio-stuff2.synths :refer [saw-keys square-keys wt-keys]]
+  (:require [audio-stuff2.synths :refer [saw-keys square-keys wt-keys horn sine-mono resonator]]
             [audio-stuff2.instruments.poly-instrument
              :refer [make-poly-instrument make-wt-poly-instrument]]
             [audio-stuff2.instruments.mono-instrument :refer [make-mono-instrument]]
@@ -25,11 +25,12 @@
                            "~/impulse-responses/left1.wav" 1.0 0.0
                            "~/impulse-responses/right1.wav" 1.0 0.0)
      (add-scale-prog (combination-chord-prog 50 chords)))
-   :square-mono
+   :horn
    (->
-     (make-mono-instrument square-keys :white-notes
+     (make-mono-instrument horn :white-notes
                            "~/impulse-responses/left1.wav" 1.0 0.0
                            "~/impulse-responses/right1.wav" 1.0 0.0)
+     (assoc :resonator-fn resonator)
      (add-scale-prog (combination-chord-prog 50 chords)))
    :wt-poly
    (->
@@ -41,6 +42,6 @@
 
 (defn on-refresh []
   (make-music instruments
-              {\q :saw-poly, \w :square-mono, \e :wt-poly}
+              {\q :saw-poly, \w :horn, \e :wt-poly}
               :saw-poly
               "/home/tom/new-recordings"))

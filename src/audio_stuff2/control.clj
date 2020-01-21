@@ -167,5 +167,6 @@
                            (recording k))]))
 
 (defn shutdown []
+  (send-off state-agent stop-playing-wrapper)
   (close-window))
 

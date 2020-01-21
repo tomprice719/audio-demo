@@ -1,7 +1,7 @@
 (ns audio-stuff2.instruments.mono-instrument
   (:require
     [overtone.core :refer :all]
-    [audio-stuff2.overtone-utils :refer [notes-g effects-g make-bus]]
+    [audio-stuff2.overtone-utils :refer [notes-g effects-g make-bus get-wt-data]]
     [audio-stuff2.instruments.base-instrument :refer [note-on
                                                       note-off
                                                       bent-pitch
@@ -9,9 +9,16 @@
                                                       initialize
                                                       audible]]))
 
-(defn change-note [{:keys [synth synth-fn freq-bus pitch-bend mod-wheel-bus out-bus] :as inst}
+(defn change-note [{:keys [synth synth-fn resonator-fn
+                           freq-bus pitch-bend mod-wheel-bus out-bus] :as inst}
                    {:keys [freq]}
                    velocity]
+  (when resonator-fn
+    (let [[wt1 wt2 wt3 wt4] (get-wt-data freq)
+          resonator (resonator-fn [:tail notes-g]
+                                  out-bus freq velocity
+                                  wt1 wt2 wt3 wt4)]
+      (after-delay 10000 #(kill resonator))))
   (control-bus-set! freq-bus (bent-pitch freq pitch-bend))
   (if synth
     inst
