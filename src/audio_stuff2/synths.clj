@@ -54,7 +54,7 @@
                      2000)
                    100))))
 
-(defsynth horn [out-bus -1 freq-bus -1 modwheel-bus -1 velocity 1.0 gate 1]
+(defsynth woodwind [out-bus -1 freq-bus -1 modwheel-bus -1 velocity 1.0 gate 1]
           (let [freq (- (lpf (in:kr freq-bus) 100) 0.2)]
             (out out-bus
                  (* 0.15

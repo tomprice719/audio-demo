@@ -47,7 +47,7 @@
                           0)))
         b (buffer (* 2 buffer-length))]
     (.complexForward fftObject a)
-    (buffer-write-relay! b (signal->wavetable (take-nth 1.5 (seq a))))
+    (buffer-write-relay! b (signal->wavetable (take-nth 2 (seq a))))
     b))
 
 (defn generate-wt-data [freq]

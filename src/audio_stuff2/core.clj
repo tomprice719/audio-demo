@@ -28,9 +28,9 @@
                            "~/impulse-responses/left1.wav" 1.0 0.0
                            "~/impulse-responses/right1.wav" 1.0 0.0)
      (update-scale (equal-temperament 100.0 128 50.0)))
-   :horn
+   :woodwind
    (->
-     (make-mono-instrument horn :white-notes
+     (make-mono-instrument woodwind :white-notes
                            "~/impulse-responses/left1.wav" 1.0 0.0
                            "~/impulse-responses/right1.wav" 1.0 0.0)
      (add-resonator resonator)
@@ -45,6 +45,6 @@
 
 (defn on-refresh []
   (make-music instruments
-              {\q :saw-poly, \w :horn, \e :wt-poly}
+              {\q :saw-poly, \w :woodwind, \e :wt-poly}
               :saw-poly
               "/home/tom/new-recordings"))
