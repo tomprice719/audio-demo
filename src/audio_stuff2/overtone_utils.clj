@@ -37,7 +37,7 @@
 (def randomObject (Random.))
 
 (defn noise-wavetable [freq]
-  (println freq)
+  (println (format "Generating wavetable for %.1f Hz" freq))
   (let [a (into-array Double/TYPE
                       (for [i (range (* 2 buffer-length))
                             :let [d (min i (- (* 2 buffer-length) i))]]
@@ -57,7 +57,7 @@
          (noise-wavetable freq)]])
 
 (def wt-data
-  (map generate-wt-data (iterate (partial * 1.2) 40.0)))
+  (map generate-wt-data (iterate (partial * 1.4) 40.0)))
 
 (defn get-wt-data [freq]
   (let [[[f wavetables]]

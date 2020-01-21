@@ -1,5 +1,5 @@
 (ns audio-stuff2.core
-  (:require [audio-stuff2.synths :refer [saw-keys square-keys wt-keys horn sine-mono resonator]]
+  (:require [audio-stuff2.synths :refer :all]
             [audio-stuff2.instruments.poly-instrument
              :refer [make-poly-instrument make-wt-poly-instrument]]
             [audio-stuff2.instruments.mono-instrument :refer [make-mono-instrument add-resonator]]
@@ -21,30 +21,47 @@
    [400.0 1 4/5 4/13]
    [400.0 1/10]])
 
+(def chord-prog (combination-chord-prog 50 chords))
+
 (def instruments
-  {:saw-poly
+  {:woodwind-nores
    (->
-     (make-poly-instrument saw-keys :all-notes
+     (make-mono-instrument woodwind :white-notes
                            "~/impulse-responses/left1.wav" 1.0 0.0
                            "~/impulse-responses/right1.wav" 1.0 0.0)
-     (update-scale (equal-temperament 100.0 128 50.0)))
-   :woodwind
+     (add-scale-prog chord-prog))
+
+   :woodwind-res
    (->
      (make-mono-instrument woodwind :white-notes
                            "~/impulse-responses/left1.wav" 1.0 0.0
                            "~/impulse-responses/right1.wav" 1.0 0.0)
      (add-resonator resonator)
-     (add-scale-prog (combination-chord-prog 50 chords)))
-   :wt-poly
+     (add-scale-prog chord-prog))
+
+   :keys
    (->
      (make-wt-poly-instrument wt-keys :white-notes
                               "~/impulse-responses/left1.wav" 1.0 0.0
                               "~/impulse-responses/right1.wav" 1.0 0.0)
-     (add-scale-prog (combination-chord-prog 50 chords)))
+     (add-scale-prog chord-prog))
+   :octave-keys
+   (->
+     (make-wt-poly-instrument octave-keys :white-notes
+                              "~/impulse-responses/left1.wav" 1.0 0.0
+                              "~/impulse-responses/right1.wav" 1.0 0.0)
+     (add-scale-prog chord-prog))
+   :12edo-keys
+   (->
+     (make-wt-poly-instrument wt-keys :all-notes
+                              "~/impulse-responses/left1.wav" 1.0 0.0
+                              "~/impulse-responses/right1.wav" 1.0 0.0)
+     (update-scale (equal-temperament 100.0 128 50.0)))
    })
 
 (defn on-refresh []
   (make-music instruments
-              {\q :saw-poly, \w :woodwind, \e :wt-poly}
-              :saw-poly
+              {\q :woodwind-nores, \w :woodwind-res,
+               \a :keys, \s :octave-keys, \d :12edo-keys}
+              :keys
               "/home/tom/new-recordings"))
