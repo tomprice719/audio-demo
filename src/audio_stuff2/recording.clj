@@ -83,7 +83,8 @@
        (assoc recording :events)))
 
 (defn load-recording [{:keys [path] :as recording}]
-  (->> (clojure.java.io/file path "counter")
-       slurp
-       (revert-recording recording)))
+  (let [counter-file (clojure.java.io/file path "counter")]
+    (if (.exists counter-file)
+      (revert-recording recording (slurp counter-file))
+      recording)))
 

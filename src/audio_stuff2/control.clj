@@ -103,20 +103,6 @@
   (audio-stuff2.recording/save-recording recording)
   state)
 
-(defn intern-updates [& bindings]
-  (doseq [[name func] bindings]
-    (intern *ns* name
-            (fn [& args]
-              (send-off state-agent
-                        #(apply func % args))
-              nil))))
-
-(defn intern-fns [& bindings]
-  (doseq [[name func] bindings]
-    (intern *ns* name
-            (fn [& args]
-              (apply func @state-agent args)))))
-
 (def default-keymap
   {\1 start-playing-wrapper
    \2 play-and-record-wrapper
@@ -131,13 +117,28 @@
                         :initial-instruments instruments
                         :cached-instruments  instruments
                         :selected-instrument selected-instrument
-                        :recording           (make-recording recording-play-fn path)
-                        :keymap (merge default-keymap
-                                       (fmap instrument-keymap-fn instrument-keymap))}
+                        :recording           (audio-stuff2.recording/load-recording
+                                               (make-recording recording-play-fn path))
+                        :keymap              (merge default-keymap
+                                                    (fmap instrument-keymap-fn instrument-keymap))}
                        initialize-instruments
                        agent))
   (set-error-mode! state-agent :continue)
   (set-error-handler! state-agent #(pst %2)))
+
+(defn intern-updates [& bindings]
+  (doseq [[name func] bindings]
+    (intern *ns* name
+            (fn [& args]
+              (send-off state-agent
+                        #(apply func % args))
+              nil))))
+
+(defn intern-fns [& bindings]
+  (doseq [[name func] bindings]
+    (intern *ns* name
+            (fn [& args]
+              (apply func @state-agent args)))))
 
 (defn make-music [instruments
                   instrument-keymap
@@ -167,6 +168,6 @@
                            (recording k))]))
 
 (defn shutdown []
-  (send-off state-agent stop-playing-wrapper)
+  (when (bound? #'state-agent)
+    (send-off state-agent stop-playing-wrapper))
   (close-window))
-

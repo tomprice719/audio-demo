@@ -1,7 +1,7 @@
 (ns audio-stuff2.instruments.mono-instrument
   (:require
     [overtone.core :refer :all]
-    [audio-stuff2.overtone-utils :refer [notes-g effects-g make-bus get-wt-data]]
+    [audio-stuff2.overtone-utils :refer [notes-g effects-g make-bus get-wt-data managed-control-bus]]
     [audio-stuff2.instruments.base-instrument :refer [note-on
                                                       note-off
                                                       bent-pitch
@@ -52,8 +52,8 @@
 
 (defmethod initialize :mono-instrument [{:keys [bus-args mod-wheel-value] :as instrument}]
   (assoc instrument :out-bus (apply make-bus bus-args)
-                    :mod-wheel-bus (doto (control-bus) (control-bus-set! mod-wheel-value))
-                    :freq-bus (control-bus)))
+                    :mod-wheel-bus (doto (managed-control-bus) (control-bus-set! mod-wheel-value))
+                    :freq-bus (managed-control-bus)))
 
 (defn make-mono-instrument [synth-fn input-type & bus-args]
   {:type            :mono-instrument

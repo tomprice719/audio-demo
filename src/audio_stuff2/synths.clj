@@ -63,7 +63,7 @@
                         (comb-l (* (bpf (white-noise)
                                         (* (lag (in:kr freq-bus)) 4)
                                         0.5)
-                                   0.1                      ;(log-interpolate (lag (in:kr modwheel-bus)) 0.01 0.04)
+                                   0.2
                                    (env-gen (adsr 0.01 0.5 0.1 0.05) :gate gate))
                                 0.2 (/ 1.0 (in:kr freq-bus)) 0.2)
                         (* 0.5

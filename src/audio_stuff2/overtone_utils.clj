@@ -9,6 +9,24 @@
 (declare notes-g)
 (declare effects-g)
 
+;; Bus management
+
+(def busses (atom ()))
+
+(defn managed-control-bus []
+  (let [bus (control-bus)]
+    (swap! busses conj bus)
+    bus))
+
+(defn managed-audio-bus []
+  (let [bus (audio-bus)]
+    (swap! busses conj bus)
+    bus))
+
+(defn free-all-busses []
+  (doall (map free-bus @busses))
+  (reset! busses ()))
+
 ;; Noise oscillator stuff
 
 (def buffer-length 1024)
@@ -75,7 +93,7 @@
 
 (defn make-bus [left-ir left-wet-gain left-dry-gain
                 right-ir right-wet-gain right-dry-gain]
-  (let [bus (audio-bus)
+  (let [bus (managed-audio-bus)
         left-ir-spec (with-server-sync #(get-ir-spectrum left-ir))
         right-ir-spec (with-server-sync #(get-ir-spectrum right-ir))]
     (reverb-synth [:tail effects-g] bus 0 left-ir-spec left-wet-gain left-dry-gain)
@@ -89,6 +107,7 @@
   ([] (when (= @connection-status* :disconnected)
         (boot-external-server))
    (with-server-sync #(clear-all))
-   (with-server-sync #(do (get-wt-data 2000.0)
+   (with-server-sync #(do (free-all-busses)
+                          (get-wt-data 2000.0)
                           (def notes-g (group "notes"))
                           (def effects-g (group "effects" :after notes-g))))))

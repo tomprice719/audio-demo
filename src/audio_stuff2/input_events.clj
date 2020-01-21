@@ -2,7 +2,7 @@
   (:require [overtone.libs.event :as e]
             [seesaw.core :refer [native! show! dispose! listen frame]]))
 
-(def window nil)
+(declare window)
 
 (def white-keys
   (vec
@@ -80,5 +80,5 @@
                       :key-char (.getKeyChar %)}))))
 
 (defn close-window []
-  (when window
+  (when (bound? #'window)
     (dispose! window)))
