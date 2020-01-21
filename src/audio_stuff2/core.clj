@@ -2,8 +2,11 @@
   (:require [audio-stuff2.synths :refer [saw-keys square-keys wt-keys horn sine-mono resonator]]
             [audio-stuff2.instruments.poly-instrument
              :refer [make-poly-instrument make-wt-poly-instrument]]
-            [audio-stuff2.instruments.mono-instrument :refer [make-mono-instrument]]
-            [audio-stuff2.scale-utils :refer [combination-chord-prog add-scale-prog]]
+            [audio-stuff2.instruments.mono-instrument :refer [make-mono-instrument add-resonator]]
+            [audio-stuff2.scale-utils :refer [combination-chord-prog
+                                              add-scale-prog
+                                              equal-temperament
+                                              update-scale]]
             [audio-stuff2.breakpoints :refer [breakpoint]]
             [audio-stuff2.control :refer [make-music]]
             [debux.core :refer [dbg dbgn]]))
@@ -21,22 +24,22 @@
 (def instruments
   {:saw-poly
    (->
-     (make-poly-instrument saw-keys :white-notes
+     (make-poly-instrument saw-keys :all-notes
                            "~/impulse-responses/left1.wav" 1.0 0.0
                            "~/impulse-responses/right1.wav" 1.0 0.0)
-     (add-scale-prog (combination-chord-prog 50 chords)))
+     (update-scale (equal-temperament 100.0 128 50.0)))
    :horn
    (->
      (make-mono-instrument horn :white-notes
                            "~/impulse-responses/left1.wav" 1.0 0.0
                            "~/impulse-responses/right1.wav" 1.0 0.0)
-     (assoc :resonator-fn resonator)
+     (add-resonator resonator)
      (add-scale-prog (combination-chord-prog 50 chords)))
    :wt-poly
    (->
      (make-wt-poly-instrument wt-keys :white-notes
-                           "~/impulse-responses/left1.wav" 1.0 0.0
-                           "~/impulse-responses/right1.wav" 1.0 0.0)
+                              "~/impulse-responses/left1.wav" 1.0 0.0
+                              "~/impulse-responses/right1.wav" 1.0 0.0)
      (add-scale-prog (combination-chord-prog 50 chords)))
    })
 

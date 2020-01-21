@@ -63,3 +63,6 @@
    :pitch-bend      0
    :mod-wheel-value 0
    :note-data       (repeat {})})
+
+(defn add-resonator [inst resonator-fn]
+  (assoc inst :resonator-fn resonator-fn))

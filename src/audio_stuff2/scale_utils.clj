@@ -1,12 +1,21 @@
 (ns audio-stuff2.scale-utils)
 
+(defn ratio->cents [r]
+  (* (/ (Math/log r) (Math/log 2))
+     1200))
+
+(defn cents->ratio [cents]
+  (java.lang.Math/pow 2.0 (/ cents 1200.0)))
+
+(defn equal-temperament [step-size num-notes starting-freq]
+  (map #(* starting-freq (cents->ratio (* step-size %))) (range num-notes)))
+
 (defn combination-chord [num-notes [fundamental-freq & chords]]
   (->> (for [x (range num-notes) y chords]
          (* (inc x) y fundamental-freq))
        sort
        dedupe
-       (take num-notes)
-       vec))
+       (take num-notes)))
 
 (defn combination-chord-prog [num-notes chord-seq]
   (mapv (partial combination-chord num-notes) chord-seq))
