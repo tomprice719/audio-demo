@@ -162,11 +162,11 @@
     ['play start-playing-wrapper]
     ['stop stop-playing-and-recording-audio]
     ['rec play-and-record-wrapper]
-    ['rec-audio (fn [state]
-                  (overtone.core/recording-start
-                    (clojure.java.io/file
-                      path (str (java.util.Date.) ".wav")))
-                  (start-playing-wrapper state))]
+    ['rec-wav (fn [state]
+                (overtone.core/recording-start
+                  (clojure.java.io/file
+                    path (str (java.util.Date.) ".wav")))
+                (start-playing-wrapper state))]
     ['load load-recording-wrapper]
     ['revert revert-recording-wrapper]
     ['save save-recording-wrapper]
