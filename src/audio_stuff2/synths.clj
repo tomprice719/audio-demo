@@ -40,17 +40,16 @@
           (out out-bus
                (let [freq (lpf (in:kr freq-bus) 100)]
                  (hpf
-                   (lpf
-                     (* (+
-                          (noise-osc freq
-                                     (t-rand:kr 0.0 6.28)
-                                     (t-rand:kr 0.0 6.28)
-                                     wt1 wt2 wt3 wt4)
-                          (* 3 (sin-osc freq)))
-                        (env-gen (adsr 0.0 6.0 0.0 0.5 :curve -6) :gate gate :action FREE)
-                        0.05
-                        (log-interpolate velocity 0.6 4))
-                     1500)
+                   (* (+
+                        (noise-osc freq
+                                   (t-rand:kr 0.0 6.28)
+                                   (t-rand:kr 0.0 6.28)
+                                   wt1 wt2 wt3 wt4)
+                        (* 2 (sin-osc freq)))
+                      (env-gen (adsr 0.0 6.0 0.0 0.5 :curve -6) :gate gate :action FREE)
+                      0.05
+                      (pow (/ 400 freq) 0.5)
+                      (log-interpolate velocity 0.6 4))
                    100))))
 
 (defsynth octave-keys [out-bus -1 freq-bus -1 mod-wheel-bus -1 velocity 1.0
@@ -71,7 +70,7 @@
                    100))))
 
 (defsynth woodwind [out-bus -1 freq-bus -1 modwheel-bus -1 velocity 1.0 gate 1]
-          (let [freq (- (lpf (in:kr freq-bus) 100) 0.2)]
+          (let [freq (lpf (in:kr freq-bus) 100)]
             (out out-bus
                  (* 0.15
                     (hpf
@@ -93,11 +92,18 @@
                       50)))))
 
 (defsynth sine-mono [out-bus -1 freq-bus -1 modwheel-bus -1 velocity 1.0 gate 1]
-          (let [freq (- (lpf (in:kr freq-bus) 100) 0.2)]
+          (let [freq (lpf (in:kr freq-bus) 100)]
             (out out-bus
                  (* 0.2
                     (sin-osc freq)
                     (env-gen (adsr 0.01 0.0 1.0 0.05 :curve 0) :gate gate)))))
+
+(defsynth additive [out-bus -1 freq-bus -1 modwheel-bus -1 velocity 1.0 gate 1]
+          (let [freq (* 1/2 (lpf (in:kr freq-bus) 100))]
+            (out out-bus
+                 (* 0.2
+                    (sin-osc freq)
+                    (env-gen (adsr 0.2 5.0 0.0 5.0 :curve -3) :gate gate)))))
 
 (defsynth resonator [out-bus -1 freq -1 velocity 1.0
                      wt1 -1 wt2 -1 wt3 -1 wt4 -1 gate 1]

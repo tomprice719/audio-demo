@@ -53,8 +53,9 @@
        (mapcat second)))
 
 (defn current-time [{:keys [recording-start-time]}]
-  (/ (- (System/nanoTime) recording-start-time)
-     1000000000.0))
+  (when recording-start-time
+    (/ (- (System/nanoTime) recording-start-time)
+       1000000000.0)))
 
 (defn make-recording [play-fn path]
   {:time-offset         0

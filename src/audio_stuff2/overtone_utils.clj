@@ -30,7 +30,7 @@
 ;; Noise oscillator stuff
 
 (def buffer-length 1024)
-(def max-freq 18000)
+(def max-freq 20000)
 
 (def fftObject (DoubleFFT_1D. buffer-length))
 
@@ -66,7 +66,7 @@
 
 ;; Reverb / make-bus stuff
 
-(def fft-size 512)
+(def fft-size 1024)
 
 (defn num-partitions [ir-buffer]
   (let [partition-size (/ fft-size 2)

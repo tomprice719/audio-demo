@@ -6,6 +6,7 @@
                                             initial-events
                                             record-event
                                             current-time]]
+            [overtone.core]
             [clojure.repl :refer [pst]]
             [debux.core :refer [dbg dbgn]]
             [audio-stuff2.breakpoints :refer [breakpoint]]
@@ -70,6 +71,11 @@
       refresh-overtone
       initialize-instruments))
 
+(defn stop-playing-and-recording-audio [state]
+  (when-let [path (overtone.core/recording-stop)]
+    (println "New recording at " path))
+  (stop-playing-wrapper state))
+
 (defn start-playing-wrapper [state]
   (-> state
       stop-playing-wrapper
@@ -106,7 +112,7 @@
 (def default-keymap
   {\1 start-playing-wrapper
    \2 play-and-record-wrapper
-   \3 stop-playing-wrapper})
+   \3 stop-playing-and-recording-audio})
 
 (defn instrument-keymap-fn [instrument-key]
   (fn [state]
@@ -154,8 +160,13 @@
     input-event-handler)
   (intern-updates
     ['play start-playing-wrapper]
-    ['stop stop-playing-wrapper]
+    ['stop stop-playing-and-recording-audio]
     ['rec play-and-record-wrapper]
+    ['rec-audio (fn [state]
+                  (overtone.core/recording-start
+                    (clojure.java.io/file
+                      path (str (java.util.Date.) ".wav")))
+                  (start-playing-wrapper state))]
     ['load load-recording-wrapper]
     ['revert revert-recording-wrapper]
     ['save save-recording-wrapper]
