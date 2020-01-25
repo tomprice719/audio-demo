@@ -88,7 +88,7 @@
 
 (defn clear-recording [{:keys [initial-instruments recording] :as state}]
   (-> state
-      (update :recording stop-playing-wrapper)
+      stop-playing-wrapper
       (assoc :recording (make-recording recording-play-fn
                                         (:path recording))
              :cached-instruments initial-instruments

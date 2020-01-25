@@ -80,10 +80,13 @@
   (snd "/b_gen" (buffer-id dest-buffer) "PreparePartConv" (buffer-id src-buffer) fft-size))
 
 (defn get-ir-spectrum [ir-location]
-  (let [my-ir (load-sample ir-location)
-        ir-spectrum (buffer (buf-size my-ir))]
-    (prepare-part-conv my-ir ir-spectrum)
-    ir-spectrum))
+  (with-server-sync
+    #(let [my-ir (load-sample ir-location)
+           ir-spectrum (buffer (buf-size my-ir))]
+       (prepare-part-conv my-ir ir-spectrum)
+       ir-spectrum)))
+
+(def get-ir-spectrum-memo (memoize get-ir-spectrum))
 
 (defsynth reverb-synth [in-bus -1 out-bus -1 ir-spec -1 wet-gain 1 dry-gain 1]
           (let [sig (in:ar in-bus 1)
@@ -94,8 +97,8 @@
 (defn make-bus [left-ir left-wet-gain left-dry-gain
                 right-ir right-wet-gain right-dry-gain]
   (let [bus (managed-audio-bus)
-        left-ir-spec (with-server-sync #(get-ir-spectrum left-ir))
-        right-ir-spec (with-server-sync #(get-ir-spectrum right-ir))]
+        left-ir-spec (get-ir-spectrum-memo left-ir)
+        right-ir-spec (get-ir-spectrum-memo right-ir)]
     (reverb-synth [:tail effects-g] bus 0 left-ir-spec left-wet-gain left-dry-gain)
     (reverb-synth [:tail effects-g] bus 1 right-ir-spec right-wet-gain right-dry-gain)
     bus))
