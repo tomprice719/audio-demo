@@ -15,19 +15,15 @@
 
 (declare state-agent)
 
-(defn instrument-reducer [instrument-state [instrument-key fn-key & args]]
-  (update instrument-state instrument-key
-          #(apply (message-handlers fn-key) % args)))
-
-(defn instrument-message-handler [{:keys [instruments] :as state} messages]
-  (assoc state :instruments (reduce instrument-reducer instruments messages)))
-
 (defn initialize-instruments [state]
   (update state :instruments (partial fmap initialize)))
 
-(defn recording-play-fn [messages]
-  (send-off state-agent
-            (fn [state] (instrument-message-handler state messages))))
+(defn consume-message [instrument-state [instrument-key fn-key & args]]
+  (update instrument-state instrument-key
+          #(apply (message-handlers fn-key) % args)))
+
+(defn recording-play-fn [message]
+  (send-off state-agent update :instruments consume-message message))
 
 (defn get-instrument-messages [state event-data]
   (let [selected-instrument-key (:selected-instrument state)
@@ -44,17 +40,22 @@
     (func state)
     state))
 
+(defn reduce2 [val f coll]
+  "This is just reduce but with the arguments in a different order,
+  which is more convenient sometimes in threading macros."
+  (reduce f val coll))
+
 (defn input-event-handler [state event-data]
   (let [messages (get-instrument-messages state event-data)]
     (-> state
-        (instrument-message-handler messages)
-        (update :recording record-event messages)
+        (update :instruments reduce2 consume-message messages)
+        (update :recording reduce2 record-event messages)
         (apply-keymap-fn event-data))))
 
 (defn refresh-cached-instruments [{:keys [initial-instruments recording] :as state}]
   (assoc state :cached-instruments
                (binding [audible false]
-                 (reduce instrument-reducer
+                 (reduce consume-message
                          initial-instruments
                          (initial-events recording)))))
 

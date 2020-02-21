@@ -4,19 +4,19 @@
 
 (defn schedule-recursively [stpe play-fn absolute-start-time events]
   (let [now (- (System/nanoTime) absolute-start-time)
-        [head [[tail-time _] :as tail]] (split-at 100 events)]
+        [head [[[tail-time _] _] :as tail]] (split-at 100 events)]
     (when (not-empty tail)
       (.schedule stpe
                  #(schedule-recursively stpe play-fn absolute-start-time tail)
                  (- tail-time now)
                  TimeUnit/NANOSECONDS))
-    (doseq [[time event] head]
+    (doseq [[[time _] event] head]
       (.schedule stpe
                  #(play-fn event)
                  (- time now)
                  TimeUnit/NANOSECONDS))))
 
-(defn before? [start-time [time event]]
+(defn before? [start-time [[time _] _]]
   (> start-time time))
 
 ;; Public interface
@@ -41,7 +41,7 @@
 
 (defn record-event [{:keys [currently-recording recording-start-time] :as recording} event]
   (if currently-recording
-    (update-in recording [:events (- (System/nanoTime) recording-start-time)] concat event)
+    (assoc-in recording [:events [(- (System/nanoTime) recording-start-time) (gensym)]] event)
     recording))
 
 (defn update-time-offset [recording time-offset]
@@ -50,7 +50,7 @@
 (defn initial-events [{:keys [events time-offset]}]
   (->> (seq events)
        (take-while (partial before? time-offset))
-       (mapcat second)))
+       (map second)))
 
 (defn current-time [{:keys [recording-start-time]}]
   (when recording-start-time

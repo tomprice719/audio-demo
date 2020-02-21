@@ -6,27 +6,42 @@
             [audio-stuff2.scale-utils :refer [combination-chord-prog
                                               add-scale-prog
                                               equal-temperament
-                                              update-scale]]
+                                              update-scale
+                                              cents->ratio]]
             [audio-stuff2.breakpoints :refer [breakpoint]]
             [audio-stuff2.control :refer [make-music]]
             [debux.core :refer [dbg dbgn]]))
 
 (def chords
-  [[400.0 1 4/5 4/8]
-   [400.0 1 4/5 4/9]
-   [400.0 1 4/5 4/11]
-   [400.0 1 4/5 4/13]
-   [400.0 1 4/5 4/9]
-   [400.0 1 4/5 4/11]
-   [400.0 1 4/5 4/13]
-   [400.0 1/10]])
+  [[400.0 5/11 1 5/4 5/3]
+   [400.0 5/13 1 5/4 5/3]])
 
 (def chords2
-  [[400.0 1 4/5]])
+  [[400.0 1 5/4 5/3]])
+
+(comment
+  (def chords
+    [[200.0 1 11/4 11/3]
+     [200.0 1 (cents->ratio 1472.73) (cents->ratio 1745.46)]
+     [200.0 1 7/4 7/3]
+     [200.0 1 (cents->ratio 1472.73) (cents->ratio 1745.46)]]))
+
+(comment
+  (def chords
+    [[400.0 1 4/5 4/8]
+     [400.0 1 4/5 4/9]
+     [400.0 1 4/5 4/11]
+     [400.0 1 4/5 4/13]
+     [400.0 1 4/5 4/9]
+     [400.0 1 4/5 4/11]
+     [400.0 1 4/5 4/13]
+     [400.0 1/10]]))
+
 
 (def chord-prog (combination-chord-prog 50 chords))
 
 (def chord-prog2 (combination-chord-prog 50 chords2))
+
 
 (def instruments
   {:woodwind-nores
@@ -34,15 +49,16 @@
      (make-mono-instrument woodwind :white-notes
                            "~/impulse-responses/left1.wav" 1.0 0.0
                            "~/impulse-responses/right1.wav" 1.0 0.0)
+     (add-resonator resonator)
      (add-scale-prog chord-prog))
 
    :woodwind-res
    (->
      (make-mono-instrument woodwind :white-notes
-                           "~/impulse-responses/left2.wav" 1.0 0.0
-                           "~/impulse-responses/right2.wav" 1.0 0.0)
+                           "~/impulse-responses/left1.wav" 1.0 0.0
+                           "~/impulse-responses/right1.wav" 1.0 0.0)
      (add-resonator resonator)
-     (add-scale-prog chord-prog2))
+     (add-scale-prog chord-prog))
 
    :keys
    (->
@@ -50,11 +66,17 @@
                               "~/impulse-responses/left3.wav" 1.0 0.0
                               "~/impulse-responses/right3.wav" 1.0 0.0)
      (add-scale-prog chord-prog))
+   :keys2
+   (->
+     (make-wt-poly-instrument wt-keys :white-notes
+                              "~/impulse-responses/left3.wav" 1.0 0.0
+                              "~/impulse-responses/right3.wav" 1.0 0.0)
+     (add-scale-prog chord-prog2))
    :octave-keys
    (->
      (make-wt-poly-instrument octave-keys :white-notes
-                              "~/impulse-responses/left1.wav" 1.0 0.0
-                              "~/impulse-responses/right1.wav" 1.0 0.0)
+                              "~/impulse-responses/left2.wav" 1.0 0.0
+                              "~/impulse-responses/right2.wav" 1.0 0.0)
      (add-scale-prog chord-prog))
    :additive
    (->
@@ -74,6 +96,6 @@
 (defn on-refresh []
   (make-music instruments
               {\q :woodwind-nores, \w :woodwind-res,
-               \a :keys, \s :octave-keys, \d :additive}
+               \a :keys, \s :octave-keys, \d :keys2}
               :keys
               "/home/tom/new-recordings"))
