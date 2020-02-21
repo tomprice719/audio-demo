@@ -140,10 +140,9 @@
    \3 stop-playing-and-recording-audio
    \4 print-time})
 
-(defn instrument-keymap-fn [[key-char instrument-key]]
-  [key-char
-   (fn [state]
-     (assoc state :selected-instrument instrument-key))])
+(defn instrument-keymap-fn [instrument-key]
+  (fn [state]
+    (assoc state :selected-instrument instrument-key)))
 
 (defn make-state-agent [instruments instrument-keymap selected-instrument path]
   (def state-agent (-> {:instruments         instruments
@@ -152,9 +151,8 @@
                         :selected-instrument selected-instrument
                         :recording           (audio-stuff2.recording/load-recording
                                                (make-recording recording-play-fn path))
-                        :keymap              (into default-keymap
-                                                   (map instrument-keymap-fn)
-                                                   instrument-keymap)}
+                        :keymap              (merge default-keymap
+                                                   (fmap instrument-keymap-fn instrument-keymap))}
                        initialize-instruments
                        agent))
   (set-error-mode! state-agent :continue)
@@ -193,7 +191,7 @@
     ['rec-wav (fn [state]
                 (overtone.core/recording-start
                   (clojure.java.io/file
-                    path (str (java.util.Date.) ".wav")))
+                    path (str (System/currentTimeMillis) ".wav")))
                 (start-playing-wrapper state))]
     ['load load-recording-wrapper]
     ['revert revert-recording-wrapper]
