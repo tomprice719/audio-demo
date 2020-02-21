@@ -130,10 +130,15 @@
                  [[(if (> time start-time) (+ time interval) time) g]
                   event]))))
 
+(defn print-time [{:keys [recording] :as state}]
+  (println (recording-time recording))
+  state)
+
 (def default-keymap
   {\1 start-playing-wrapper
    \2 play-and-record-wrapper
-   \3 stop-playing-and-recording-audio})
+   \3 stop-playing-and-recording-audio
+   \4 print-time})
 
 (defn instrument-keymap-fn [[key-char instrument-key]]
   [key-char
@@ -201,7 +206,7 @@
     ['get-time (fn [{:keys [recording]}]
                  (recording-time recording))]
     ['get-recording-info (fn [{:keys [recording]} k]
-                           (recording k))]))
+                           (k recording))]))
 
 (defn shutdown []
   (when (bound? #'state-agent)
