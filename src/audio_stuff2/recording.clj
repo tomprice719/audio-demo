@@ -2,18 +2,27 @@
   (:import (java.util.concurrent TimeUnit)
            (java.util.concurrent Executors)))
 
+(defn seconds->nanos [seconds]
+  (long (* 1000000000.0 seconds)))
+
+(defn nanos->seconds [nanos]
+  (/ nanos 1000000000.0))
+
+(defn current-time-seconds []
+  (nanos->seconds (System/nanoTime)))
+
 (defn schedule-recursively [stpe play-fn absolute-start-time events]
-  (let [now (- (System/nanoTime) absolute-start-time)
+  (let [now (- (current-time-seconds) absolute-start-time)
         [head [[[tail-time _] _] :as tail]] (split-at 100 events)]
     (when (not-empty tail)
       (.schedule stpe
                  #(schedule-recursively stpe play-fn absolute-start-time tail)
-                 (- tail-time now)
+                 (seconds->nanos (- tail-time now))
                  TimeUnit/NANOSECONDS))
     (doseq [[[time _] event] head]
       (.schedule stpe
                  #(play-fn event)
-                 (- time now)
+                 (seconds->nanos (- time now))
                  TimeUnit/NANOSECONDS))))
 
 (defn before? [start-time [[time _] _]]
@@ -27,7 +36,7 @@
 
 (defn start-playing [{:keys [events play-fn time-offset] :as recording}]
   (let [stpe (Executors/newScheduledThreadPool 1)
-        start-time (- (System/nanoTime) time-offset)]
+        start-time (- (current-time-seconds) time-offset)]
     (->> (seq events)
          (drop-while (partial before? time-offset))
          (schedule-recursively stpe play-fn start-time))
@@ -41,7 +50,7 @@
 
 (defn record-event [{:keys [currently-recording recording-start-time] :as recording} event]
   (if currently-recording
-    (assoc-in recording [:events [(- (System/nanoTime) recording-start-time) (gensym)]] event)
+    (assoc-in recording [:events [(- (current-time-seconds) recording-start-time) (gensym)]] event)
     recording))
 
 (defn update-time-offset [recording time-offset]
@@ -52,10 +61,9 @@
        (take-while (partial before? time-offset))
        (map second)))
 
-(defn current-time [{:keys [recording-start-time]}]
+(defn recording-time [{:keys [recording-start-time]}]
   (when recording-start-time
-    (/ (- (System/nanoTime) recording-start-time)
-       1000000000.0)))
+    (- (current-time-seconds) recording-start-time)))
 
 (defn make-recording [play-fn path]
   {:time-offset         0
@@ -89,3 +97,5 @@
       (revert-recording recording (slurp counter-file))
       recording)))
 
+(defn transduce-events [{:keys [events] :as recording} xform]
+  (assoc recording :events (into (sorted-map) xform events)))

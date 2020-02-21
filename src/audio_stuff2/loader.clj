@@ -1,6 +1,6 @@
 (ns audio-stuff2.loader
   (:require [clojure.tools.namespace.repl]
-            [overtone.core :refer :all :exclude [stop clear]]
+            [overtone.core :refer :all :exclude [stop clear remove-instrument]]
             [clojure.repl :refer :all]
             [audio-stuff2.breakpoints :refer :all]))
 

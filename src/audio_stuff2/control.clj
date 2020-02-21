@@ -5,7 +5,8 @@
             [audio-stuff2.recording :refer [make-recording
                                             initial-events
                                             record-event
-                                            current-time]]
+                                            recording-time
+                                            transduce-events]]
             [overtone.core]
             [clojure.repl :refer [pst]]
             [debux.core :refer [dbg dbgn]]
@@ -110,14 +111,34 @@
   (audio-stuff2.recording/save-recording recording)
   state)
 
+(defn remove-events [state min-time max-time pred]
+  (update state :recording transduce-events
+          (remove
+            (fn [[[time _] event]]
+              (and (> time min-time)
+                   (< time max-time)
+                   (pred event))))))
+
+(defn remove-instrument [state min-time max-time removed-key]
+  (remove-events state min-time max-time
+                 (fn [[instrument-key & _]]
+                   (= instrument-key removed-key))))
+
+(defn expand-events [state start-time interval]
+  (update state :recording transduce-events
+          (map (fn [[[time g] event]]
+                 [[(if (> time start-time) (+ time interval) time) g]
+                  event]))))
+
 (def default-keymap
   {\1 start-playing-wrapper
    \2 play-and-record-wrapper
    \3 stop-playing-and-recording-audio})
 
-(defn instrument-keymap-fn [instrument-key]
-  (fn [state]
-    (assoc state :selected-instrument instrument-key)))
+(defn instrument-keymap-fn [[key-char instrument-key]]
+  [key-char
+   (fn [state]
+     (assoc state :selected-instrument instrument-key))])
 
 (defn make-state-agent [instruments instrument-keymap selected-instrument path]
   (def state-agent (-> {:instruments         instruments
@@ -126,8 +147,9 @@
                         :selected-instrument selected-instrument
                         :recording           (audio-stuff2.recording/load-recording
                                                (make-recording recording-play-fn path))
-                        :keymap              (merge default-keymap
-                                                    (fmap instrument-keymap-fn instrument-keymap))}
+                        :keymap              (into default-keymap
+                                                   (map instrument-keymap-fn)
+                                                   instrument-keymap)}
                        initialize-instruments
                        agent))
   (set-error-mode! state-agent :continue)
@@ -172,10 +194,12 @@
     ['revert revert-recording-wrapper]
     ['save save-recording-wrapper]
     ['clear clear-recording]
-    ['set-time update-time-offset-wrapper])
+    ['set-time update-time-offset-wrapper]
+    ['remove-instrument remove-instrument]
+    ['expand expand-events])
   (intern-fns
     ['get-time (fn [{:keys [recording]}]
-                 (current-time recording))]
+                 (recording-time recording))]
     ['get-recording-info (fn [{:keys [recording]} k]
                            (recording k))]))
 
