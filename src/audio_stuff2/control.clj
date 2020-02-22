@@ -34,9 +34,9 @@
       selected-instrument-key
       event-data)))
 
-(defn apply-keymap-fn [{:keys [keymap] :as state} {:keys [event key-char]}]
+(defn apply-keymap-fn [{:keys [keymap] :as state} {:keys [event-type key-char]}]
   (if-let
-    [func (and (= event :key-pressed)
+    [func (and (= event-type :key-pressed)
                (keymap key-char))]
     (func state)
     state))
@@ -111,7 +111,7 @@
   (audio-stuff2.recording/save-recording recording)
   state)
 
-(defn remove-events [state min-time max-time pred]
+(defn remove-messages [state min-time max-time pred]
   (update state :recording transduce-events
           (remove
             (fn [[[time _] event]]
@@ -120,11 +120,11 @@
                    (pred event))))))
 
 (defn remove-instrument [state min-time max-time removed-key]
-  (remove-events state min-time max-time
-                 (fn [[instrument-key & _]]
+  (remove-messages state min-time max-time
+                   (fn [[instrument-key & _]]
                    (= instrument-key removed-key))))
 
-(defn expand-events [state start-time interval]
+(defn expand [state start-time interval]
   (update state :recording transduce-events
           (map (fn [[[time g] event]]
                  [[(if (> time start-time) (+ time interval) time) g]
@@ -199,7 +199,7 @@
     ['clear clear-recording]
     ['set-time update-time-offset-wrapper]
     ['remove-instrument remove-instrument]
-    ['expand expand-events])
+    ['expand expand])
   (intern-fns
     ['get-time (fn [{:keys [recording]}]
                  (recording-time recording))]
