@@ -40,47 +40,54 @@
 
 (def chord-prog2 (combination-chord-prog 50 chords2))
 
+(def left-ir-file
+  (clojure.java.io/file
+    "impulse-responses" "left.wav"))
+
+(def right-ir-file
+  (clojure.java.io/file
+    "impulse-responses" "right.wav"))
 
 (def instruments
   {:woodwind-nores
    (->
      (make-mono-instrument woodwind :white-notes
-                           "~/impulse-responses/left1.wav" 1.0 0.0
-                           "~/impulse-responses/right1.wav" 1.0 0.0)
+                           left-ir-file 1.0 0.0
+                           right-ir-file 1.0 0.0)
      (add-resonator resonator)
      (add-scale-prog chord-prog))
 
    :woodwind-res
    (->
      (make-mono-instrument woodwind :white-notes
-                           "~/impulse-responses/left1.wav" 1.0 0.0
-                           "~/impulse-responses/right1.wav" 1.0 0.0)
+                           left-ir-file 1.0 0.0
+                           right-ir-file 1.0 0.0)
      (add-resonator resonator)
      (add-scale-prog chord-prog))
 
    :keys
    (->
      (make-wt-poly-instrument wt-keys :white-notes
-                              "~/impulse-responses/left3.wav" 1.0 0.0
-                              "~/impulse-responses/right3.wav" 1.0 0.0)
+                              left-ir-file 1.0 0.0
+                              right-ir-file 1.0 0.0)
      (add-scale-prog chord-prog))
    :keys2
    (->
      (make-wt-poly-instrument wt-keys :white-notes
-                              "~/impulse-responses/left3.wav" 1.0 0.0
-                              "~/impulse-responses/right3.wav" 1.0 0.0)
+                              left-ir-file 1.0 0.0
+                              right-ir-file 1.0 0.0)
      (add-scale-prog chord-prog2))
    :octave-keys
    (->
      (make-wt-poly-instrument octave-keys :white-notes
-                              "~/impulse-responses/left2.wav" 1.0 0.0
-                              "~/impulse-responses/right2.wav" 1.0 0.0)
+                              left-ir-file 1.0 0.0
+                              right-ir-file 1.0 0.0)
      (add-scale-prog chord-prog))
    :additive
    (->
      (make-poly-instrument additive :white-notes
-                              "~/impulse-responses/left2.wav" 1.0 0.0
-                              "~/impulse-responses/right2.wav" 1.0 0.0)
+                           left-ir-file 1.0 0.0
+                           right-ir-file 1.0 0.0)
      (add-scale-prog chord-prog))
    })
 
@@ -96,4 +103,4 @@
               {\q :woodwind-nores, \w :woodwind-res,
                \a :keys, \s :octave-keys, \d :keys2}
               :keys
-              "/home/tom/new-recordings"))
+              "saved"))

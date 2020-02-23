@@ -11,4 +11,5 @@
                  [org.clojure/core.async "0.6.532"]
                  [org.clojure/algo.generic "0.1.3"]
                  [seesaw "1.5.0"]]
-  :repl-options {:init-ns audio-stuff2.loader})
+  :repl-options {:init-ns audio-stuff2.loader}
+  :injections [(refresh)])
