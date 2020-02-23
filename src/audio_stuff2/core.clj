@@ -8,9 +8,7 @@
                                               equal-temperament
                                               update-scale
                                               cents->ratio]]
-            [audio-stuff2.breakpoints :refer [breakpoint]]
-            [audio-stuff2.control :refer [make-music]]
-            [debux.core :refer [dbg dbgn]]))
+            [audio-stuff2.control :refer [make-music]]))
 
 (def chords
   [[400.0 5/11 1 5/4 5/3]

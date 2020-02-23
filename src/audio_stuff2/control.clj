@@ -9,8 +9,6 @@
                                             transduce-events]]
             [overtone.core]
             [clojure.repl :refer [pst]]
-            [debux.core :refer [dbg dbgn]]
-            [audio-stuff2.breakpoints :refer [breakpoint]]
             [clojure.algo.generic.functor :refer [fmap]]
             [audio-stuff2.overtone-utils :refer [refresh-overtone]]))
 
