@@ -1,6 +1,11 @@
-(ns audio-stuff2.instruments.message-generators)
+(ns audio-stuff2.instruments.message-generators
+  "Defines how messages are generated for instruments in response to user-input,
+  depending on the input-type of the instrument.")
 
 (defmulti generate-messages (fn [inst inst-key event-data] (:input-type inst)))
+
+"With :white-notes input type, use white notes on midi keyboard for playing.
+Use black notes to switch to the next scale."
 
 (defmethod generate-messages :white-notes [inst inst-key {:keys [event-type
                                                                  white-note-num
@@ -15,6 +20,9 @@
     :mod-wheel [[inst-key :mod-wheel mod-wheel-value]]
     []))
 
+"With :all-notes input type, all notes on the keyboard are used for playing.
+There is currently no implemented way to switch scales."
+
 (defmethod generate-messages :all-notes [inst inst-key [event-type
                                                         note-num
                                                         velocity
@@ -28,6 +36,9 @@
     []))
 
 (def horizontal-keymap (zipmap "zxcvbnm,./asdfghjkl;qwertyuiop" (range)))
+
+"With :typing input type, play notes by typing on your computer keyboard.
+Refer to horizontal-keymap to see the order in which keys are mapped to notes."
 
 (defmethod generate-messages :typing [{:keys [default-velocity default-mod-wheel]}
                                       inst-key

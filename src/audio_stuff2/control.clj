@@ -1,4 +1,7 @@
 (ns audio-stuff2.control
+  "Defines top-level functions for updating global state
+  and lets us call them by binding them to input events
+  and interning them to loader namespace."
   (:require [audio-stuff2.input-events :refer [set-handlers close-window]]
             [audio-stuff2.instruments.base-instrument :refer [message-handlers initialize audible]]
             [audio-stuff2.instruments.message-generators :refer [generate-messages]]
@@ -174,6 +177,12 @@
                   instrument-keymap
                   initial-instrument
                   path]
+  "Initializes state agent, binds handlers to input events, and interns functions to loader namespace.
+
+  instruments: map of instrument keys to instruments
+  instrument-keymap: maps key characters to instrument keys, for controlling which keyboard-key activates which instrument
+  initial-instrument: first instrument that is activated
+  path: path for saving recordings"
   (refresh-overtone)
   (make-state-agent
     instruments

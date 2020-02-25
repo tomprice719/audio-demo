@@ -4,41 +4,14 @@
              :refer [make-poly-instrument make-wt-poly-instrument]]
             [audio-stuff2.instruments.mono-instrument :refer [make-mono-instrument add-resonator]]
             [audio-stuff2.scale-utils :refer [combination-chord-prog
-                                              add-scale-prog
-                                              equal-temperament
-                                              update-scale
-                                              cents->ratio]]
+                                              add-scale-prog]]
             [audio-stuff2.control :refer [make-music]]))
 
 (def chords
   [[400.0 5/11 1 5/4 5/3]
    [400.0 5/13 1 5/4 5/3]])
 
-(def chords2
-  [[400.0 1 5/4 5/3]])
-
-(comment
-  (def chords
-    [[200.0 1 11/4 11/3]
-     [200.0 1 (cents->ratio 1472.73) (cents->ratio 1745.46)]
-     [200.0 1 7/4 7/3]
-     [200.0 1 (cents->ratio 1472.73) (cents->ratio 1745.46)]]))
-
-(comment
-  (def chords
-    [[400.0 1 4/5 4/8]
-     [400.0 1 4/5 4/9]
-     [400.0 1 4/5 4/11]
-     [400.0 1 4/5 4/13]
-     [400.0 1 4/5 4/9]
-     [400.0 1 4/5 4/11]
-     [400.0 1 4/5 4/13]
-     [400.0 1/10]]))
-
-
 (def chord-prog (combination-chord-prog 50 chords))
-
-(def chord-prog2 (combination-chord-prog 50 chords2))
 
 (def left-ir-file
   (clojure.java.io/file
@@ -49,58 +22,45 @@
     "impulse-responses" "right.wav"))
 
 (def instruments
-  {:woodwind-nores
+  {:woodwind-res
    (->
-     (make-mono-instrument woodwind :white-notes
-                           left-ir-file 1.0 0.0
-                           right-ir-file 1.0 0.0)
-     (add-resonator resonator)
-     (add-scale-prog chord-prog))
+     (make-mono-instrument                                  ;make a monophonic instrument
+       woodwind                                             ;what synth to use
+       :typing                                              ;the input type. See instruments.message-generators for more information.
+       left-ir-file 1.0 0.0                                 ;reverb parameters for each channel:
+       right-ir-file 1.0 0.0)                               ;impulse response, wet volume, dry volume
+     (add-resonator resonator)                              ;play a sustained sound on top of each note
+     (add-scale-prog chord-prog)                            ;specify the scale progression
+     (assoc :default-velocity 0.5 :default-mod-wheel 0.5))   ;velocity and modwheel values used when not supported by input type
 
-   :woodwind-res
+   :woodwind-nores
    (->
-     (make-mono-instrument woodwind :white-notes
+     (make-mono-instrument woodwind :typing
                            left-ir-file 1.0 0.0
                            right-ir-file 1.0 0.0)
-     (add-resonator resonator)
-     (add-scale-prog chord-prog))
+     (add-scale-prog chord-prog)
+     (assoc :default-velocity 0.5 :default-mod-wheel 0.5))
 
    :keys
    (->
-     (make-wt-poly-instrument wt-keys :white-notes
+     (make-wt-poly-instrument keys :typing
                               left-ir-file 1.0 0.0
                               right-ir-file 1.0 0.0)
-     (add-scale-prog chord-prog))
-   :keys2
-   (->
-     (make-wt-poly-instrument wt-keys :white-notes
-                              left-ir-file 1.0 0.0
-                              right-ir-file 1.0 0.0)
-     (add-scale-prog chord-prog2))
+     (add-scale-prog chord-prog)
+     (assoc :default-velocity 0.5 :default-mod-wheel 0.5))
+
    :octave-keys
    (->
-     (make-wt-poly-instrument octave-keys :white-notes
+     (make-wt-poly-instrument octave-keys :typing
                               left-ir-file 1.0 0.0
                               right-ir-file 1.0 0.0)
-     (add-scale-prog chord-prog))
-   :additive
-   (->
-     (make-poly-instrument additive :white-notes
-                           left-ir-file 1.0 0.0
-                           right-ir-file 1.0 0.0)
-     (add-scale-prog chord-prog))
+     (add-scale-prog chord-prog)
+     (assoc :default-velocity 0.5 :default-mod-wheel 0.5))
    })
-
-;:12edo-keys
-;(->
-;  (make-wt-poly-instrument wt-keys :all-notes
-;                           "~/impulse-responses/left1.wav" 1.0 0.0
-;                           "~/impulse-responses/right1.wav" 1.0 0.0)
-;  (update-scale (equal-temperament 100.0 128 50.0)))
 
 (defn on-refresh []
   (make-music instruments
-              {\q :woodwind-nores, \w :woodwind-res,
-               \a :keys, \s :octave-keys, \d :keys2}
+              {\5 :woodwind-res, \6 :woodwind-nores,
+               \7 :keys, \8 :octave-keys}
               :keys
               "saved"))
