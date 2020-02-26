@@ -17,4 +17,4 @@
   (clojure.tools.namespace.repl/refresh
     :after 'audio-stuff2.core/on-refresh))
 
-(println "A")
+(refresh)

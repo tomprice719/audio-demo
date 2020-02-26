@@ -83,5 +83,5 @@
                                (t-rand:kr 0.0 6.28)
                                wt1 wt2 wt3 wt4))
                   (env-gen (adsr 0.0 3.0 0.0 3.0 :curve 0) :gate gate :action FREE)
-                  0.02
+                  0.01
                   (log-interpolate velocity 0.6 4))))

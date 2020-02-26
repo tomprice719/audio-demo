@@ -83,19 +83,19 @@
     (spit counter-file counter-num)
     (println "Now at file " counter-num)))
 
-(defn revert-recording [{:keys [path] :as recording} file-num]
-  (->> (str file-num)
-       (clojure.java.io/file path)
-       slurp
-       read-string
-       (into (sorted-map))
-       (assoc recording :events)))
-
-(defn load-recording [{:keys [path] :as recording}]
-  (let [counter-file (clojure.java.io/file path "counter")]
-    (if (.exists counter-file)
-      (revert-recording recording (slurp counter-file))
-      recording)))
+(defn load-recording
+  ([{:keys [path] :as recording} file-num]
+   (->> (str file-num)
+        (clojure.java.io/file path)
+        slurp
+        read-string
+        (into (sorted-map))
+        (assoc recording :events)))
+  ([{:keys [path] :as recording}]
+   (let [counter-file (clojure.java.io/file path "counter")]
+     (if (.exists counter-file)
+       (load-recording recording (slurp counter-file))
+       recording))))
 
 (defn transduce-events [{:keys [events] :as recording} xform]
   (assoc recording :events (into (sorted-map) xform events)))

@@ -111,6 +111,6 @@
         (boot-external-server))
    (with-server-sync #(clear-all))
    (with-server-sync #(do (free-all-busses)
-                          (get-wt-data 2000.0)
+                          (get-wt-data 4000.0)
                           (def notes-g (group "notes"))
                           (def effects-g (group "effects" :after notes-g))))))

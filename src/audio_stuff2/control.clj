@@ -98,15 +98,15 @@
              :instruments initial-instruments)
       initialize-instruments))
 
-(defn load-recording-wrapper [state]
-  (-> state
-      clear-recording
-      (update :recording audio-stuff2.recording/load-recording)))
-
-(defn revert-recording-wrapper [state file-num]
-  (-> state
-      clear-recording
-      (update :recording audio-stuff2.recording/revert-recording file-num)))
+(defn load-recording-wrapper
+  ([state]
+   (-> state
+       clear-recording
+       (update :recording audio-stuff2.recording/load-recording)))
+  ([state file-num]
+   (-> state
+       clear-recording
+       (update :recording audio-stuff2.recording/load-recording file-num))))
 
 (defn save-recording-wrapper [{:keys [recording] :as state}]
   (audio-stuff2.recording/save-recording recording)
@@ -201,7 +201,6 @@
                     path (str (System/currentTimeMillis) ".wav")))
                 (start-playing-wrapper state))]
     ['load load-recording-wrapper]
-    ['revert revert-recording-wrapper]
     ['save save-recording-wrapper]
     ['clear clear-recording]
     ['set-time update-time-offset-wrapper]
