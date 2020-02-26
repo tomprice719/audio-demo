@@ -10,15 +10,17 @@
 (defn equal-temperament [step-size num-notes starting-freq]
   (map #(* starting-freq (cents->ratio (* step-size %))) (range num-notes)))
 
-(defn combination-chord [num-notes [fundamental-freq & chords]]
-  (->> (for [x (range num-notes) y chords]
-         (* (inc x) y fundamental-freq))
+(defn combination-scale [num-notes [reference-freq & ratios]]
+  "Creates a scale by taking the union of multiple harmonic series.
+  The fundamental frequency of each series is specified as a ratio multiplied by a fixed reference frequency."
+  (->> (for [x (range num-notes) y ratios]
+         (* (inc x) y reference-freq))
        sort
        dedupe
        (take num-notes)))
 
-(defn combination-chord-prog [num-notes chord-seq]
-  (mapv (partial combination-chord num-notes) chord-seq))
+(defn combination-scale-prog [num-notes scale-seq]
+  (mapv (partial combination-scale num-notes) scale-seq))
 
 (defn update-scale [{:keys [note-data] :as inst} new-scale]
   (assoc inst :note-data (mapv #(assoc %1 :freq %2) note-data new-scale)))
