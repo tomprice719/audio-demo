@@ -1,4 +1,4 @@
-(ns audio-stuff2.synths
+(ns audio-demo.synths
   (:require [overtone.core :refer :all]))
 
 (defcgen log-interpolate [fraction low high]

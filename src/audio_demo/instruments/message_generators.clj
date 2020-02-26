@@ -1,4 +1,4 @@
-(ns audio-stuff2.instruments.message-generators
+(ns audio-demo.instruments.message-generators
   "Defines how messages are generated for instruments in response to user-input,
   depending on the input-type of the instrument.")
 

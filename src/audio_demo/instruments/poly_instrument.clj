@@ -1,8 +1,8 @@
-(ns audio-stuff2.instruments.poly-instrument
+(ns audio-demo.instruments.poly-instrument
   (:require
     [overtone.core :refer :all]
-    [audio-stuff2.overtone-utils :refer [notes-g effects-g make-bus get-wt-data managed-control-bus]]
-    [audio-stuff2.instruments.base-instrument :refer [note-on
+    [audio-demo.overtone-utils :refer [notes-g effects-g make-bus get-wt-data managed-control-bus]]
+    [audio-demo.instruments.base-instrument :refer [note-on
                                                       note-off
                                                       bent-pitch
                                                       pitch-bend

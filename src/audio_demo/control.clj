@@ -1,11 +1,11 @@
-(ns audio-stuff2.control
+(ns audio-demo.control
   "Defines top-level functions for updating global state
   and lets us call them by binding them to input events
   and interning them to loader namespace."
-  (:require [audio-stuff2.input-events :refer [set-handlers close-window]]
-            [audio-stuff2.instruments.base-instrument :refer [message-handlers initialize audible]]
-            [audio-stuff2.instruments.message-generators :refer [generate-messages]]
-            [audio-stuff2.recording :refer [make-recording
+  (:require [audio-demo.input-events :refer [set-handlers close-window]]
+            [audio-demo.instruments.base-instrument :refer [message-handlers initialize audible]]
+            [audio-demo.instruments.message-generators :refer [generate-messages]]
+            [audio-demo.recording :refer [make-recording
                                             initial-events
                                             record-event
                                             recording-time
@@ -13,7 +13,7 @@
             [overtone.core]
             [clojure.repl :refer [pst]]
             [clojure.algo.generic.functor :refer [fmap]]
-            [audio-stuff2.overtone-utils :refer [refresh-overtone]]))
+            [audio-demo.overtone-utils :refer [refresh-overtone]]))
 
 (declare state-agent)
 
@@ -63,13 +63,13 @@
 
 (defn update-time-offset-wrapper [state time-offset]
   (-> state
-      (update :recording audio-stuff2.recording/update-time-offset
+      (update :recording audio-demo.recording/update-time-offset
               time-offset)
       refresh-cached-instruments))
 
 (defn stop-playing-wrapper [{:keys [cached-instruments] :as state}]
   (-> state
-      (update :recording audio-stuff2.recording/stop-playing)
+      (update :recording audio-demo.recording/stop-playing)
       (assoc :instruments cached-instruments)
       refresh-overtone
       initialize-instruments))
@@ -82,12 +82,12 @@
 (defn start-playing-wrapper [state]
   (-> state
       stop-playing-wrapper
-      (update :recording audio-stuff2.recording/start-playing)))
+      (update :recording audio-demo.recording/start-playing)))
 
 (defn play-and-record-wrapper [state]
   (-> state
       stop-playing-wrapper
-      (update :recording audio-stuff2.recording/play-and-record)))
+      (update :recording audio-demo.recording/play-and-record)))
 
 (defn clear-recording [{:keys [initial-instruments recording] :as state}]
   (-> state
@@ -102,14 +102,14 @@
   ([state]
    (-> state
        clear-recording
-       (update :recording audio-stuff2.recording/load-recording)))
+       (update :recording audio-demo.recording/load-recording)))
   ([state file-num]
    (-> state
        clear-recording
-       (update :recording audio-stuff2.recording/load-recording file-num))))
+       (update :recording audio-demo.recording/load-recording file-num))))
 
 (defn save-recording-wrapper [{:keys [recording] :as state}]
-  (audio-stuff2.recording/save-recording recording)
+  (audio-demo.recording/save-recording recording)
   state)
 
 (defn remove-messages [state min-time max-time pred]
@@ -150,7 +150,7 @@
                         :initial-instruments instruments
                         :cached-instruments  instruments
                         :selected-instrument selected-instrument
-                        :recording           (audio-stuff2.recording/load-recording
+                        :recording           (audio-demo.recording/load-recording
                                                (make-recording recording-play-fn path))
                         :keymap              (merge default-keymap
                                                    (fmap instrument-keymap-fn instrument-keymap))}

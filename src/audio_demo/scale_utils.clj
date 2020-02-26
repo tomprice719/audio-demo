@@ -1,4 +1,4 @@
-(ns audio-stuff2.scale-utils)
+(ns audio-demo.scale-utils)
 
 (defn ratio->cents [r]
   (* (/ (Math/log r) (Math/log 2))

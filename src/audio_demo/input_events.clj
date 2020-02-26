@@ -1,4 +1,4 @@
-(ns audio-stuff2.input-events
+(ns audio-demo.input-events
   (:require [overtone.libs.event :as e]
             [seesaw.core :refer [native! show! dispose! listen frame]]))
 

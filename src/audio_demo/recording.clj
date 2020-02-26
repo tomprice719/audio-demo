@@ -1,4 +1,4 @@
-(ns audio-stuff2.recording
+(ns audio-demo.recording
   (:import (java.util.concurrent TimeUnit)
            (java.util.concurrent Executors)))
 

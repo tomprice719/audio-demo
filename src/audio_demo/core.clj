@@ -1,11 +1,11 @@
-(ns audio-stuff2.core
-  (:require [audio-stuff2.synths :refer :all]
-            [audio-stuff2.instruments.poly-instrument
+(ns audio-demo.core
+  (:require [audio-demo.synths :refer :all]
+            [audio-demo.instruments.poly-instrument
              :refer [make-poly-instrument make-wt-poly-instrument]]
-            [audio-stuff2.instruments.mono-instrument :refer [make-mono-instrument add-resonator]]
-            [audio-stuff2.scale-utils :refer [combination-chord-prog
+            [audio-demo.instruments.mono-instrument :refer [make-mono-instrument add-resonator]]
+            [audio-demo.scale-utils :refer [combination-chord-prog
                                               add-scale-prog]]
-            [audio-stuff2.control :refer [make-music]]))
+            [audio-demo.control :refer [make-music]]))
 
 (def chords
   [[400.0 5/11 1 5/4 5/3]

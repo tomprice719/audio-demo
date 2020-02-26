@@ -1,6 +1,6 @@
-(ns audio-stuff2.instruments.base-instrument
-  (:require [audio-stuff2.overtone-utils :refer [notes-g effects-g reverb-synth]]
-            [audio-stuff2.scale-utils :refer [next-scale]]
+(ns audio-demo.instruments.base-instrument
+  (:require [audio-demo.overtone-utils :refer [notes-g effects-g reverb-synth]]
+            [audio-demo.scale-utils :refer [next-scale]]
             [overtone.core :refer :all]))
 
 (def ^:dynamic audible true)

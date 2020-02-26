@@ -1,4 +1,4 @@
-(ns audio-stuff2.loader
+(ns audio-demo.loader
   "Initial namespace loaded by the repl.
   We avoid requiring other namespaces from this project,
   so that if an error is encountered while compiling one of those namespaces
@@ -12,9 +12,9 @@
 (clojure.tools.namespace.repl/disable-reload!)
 
 (defn refresh []
-  (when (find-ns 'audio-stuff2.control)
-    ((ns-resolve 'audio-stuff2.control 'shutdown)))
+  (when (find-ns 'audio-demo.control)
+    ((ns-resolve 'audio-demo.control 'shutdown)))
   (clojure.tools.namespace.repl/refresh
-    :after 'audio-stuff2.core/on-refresh))
+    :after 'audio-demo.core/on-refresh))
 
 (refresh)

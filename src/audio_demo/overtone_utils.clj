@@ -1,4 +1,4 @@
-(ns audio-stuff2.overtone-utils
+(ns audio-demo.overtone-utils
   (:require
     [overtone.core :refer :all]
     [overtone.sc.machinery.server.comms :refer [with-server-sync]]
