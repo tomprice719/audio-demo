@@ -42,6 +42,6 @@ There are some functions you can call at the repl:
 
 (volume vol) - set the master volume.
 
-### Potential problem
+## Potential problem
 
 If you get any popping or clicking, try increasing the fft-size var in overtone-utils to a larger power of 2. This makes things easier on the CPU at the expense of greater latency.
