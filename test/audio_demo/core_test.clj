@@ -1,6 +1,6 @@
-(ns audio-stuff2.core-test
+(ns audio-demo.core-test
   (:require [clojure.test :refer :all]
-            [audio-stuff2.core :refer :all]))
+            [audio-demo.core :refer :all]))
 
 (deftest a-test
   (testing "FIXME, I fail."
