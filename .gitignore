@@ -15,4 +15,3 @@ pom.xml.asc
 *.log
 *.iml
 /native
-/saved
