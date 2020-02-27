@@ -13,8 +13,9 @@
   The first number of each row (400.0 here) is the reference frequency.
   The fundamental frequency of each harmonic series included in the scale is specified as a ratio
   of the reference frequency, e.g. 400 * 5/ 11 = 181.8 Hz fundamental is included in the first scale."
-  [[400.0 5/11 1 5/4 5/3]
-   [400.0 5/13 1 5/4 5/3]])
+  [[100.0 1 7/3 7/2]
+   [100.0 1 11/3 11/2]
+   [100.0 1 13/3 13/2]])
 
 (def scale-prog (combination-scale-prog 50 scales))
 
