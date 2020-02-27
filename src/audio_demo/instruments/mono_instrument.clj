@@ -3,14 +3,14 @@
     [overtone.core :refer :all]
     [audio-demo.overtone-utils :refer [notes-g effects-g make-bus get-wt-data managed-control-bus]]
     [audio-demo.instruments.base-instrument :refer [note-on
-                                                      note-off
-                                                      bent-pitch
-                                                      pitch-bend
-                                                      initialize
-                                                      audible]]))
+                                                    note-off
+                                                    bent-pitch
+                                                    pitch-bend
+                                                    initialize
+                                                    audible]]))
 
 (defn change-note [{:keys [synth synth-fn resonator-fn
-                           freq-bus pitch-bend mod-wheel-bus out-bus] :as inst}
+                           freq-bus pb-value mod-wheel-bus out-bus] :as inst}
                    {:keys [freq]}
                    velocity]
   (when resonator-fn
@@ -19,7 +19,7 @@
                                   out-bus freq velocity
                                   wt1 wt2 wt3 wt4)]
       (after-delay 10000 #(kill resonator))))
-  (control-bus-set! freq-bus (bent-pitch freq pitch-bend))
+  (control-bus-set! freq-bus (bent-pitch freq pb-value))
   (if synth
     inst
     (assoc inst :synth (synth-fn [:tail notes-g] out-bus freq-bus mod-wheel-bus))))
@@ -48,7 +48,7 @@
              (and audible
                   (get-in inst [:note-data current-note-num]))]
     (control-bus-set! freq-bus (bent-pitch freq pb-value)))
-  (assoc inst :pitch-bend pb-value))
+  (assoc inst :pb-value pb-value))
 
 (defmethod initialize :mono-instrument [{:keys [bus-args mod-wheel-value] :as instrument}]
   (assoc instrument :out-bus (apply make-bus bus-args)
@@ -60,7 +60,7 @@
    :synth-fn        synth-fn
    :input-type      input-type
    :bus-args        bus-args
-   :pitch-bend      0
+   :pb-value        0
    :mod-wheel-value 0
    :note-data       (repeat {})})
 

@@ -3,21 +3,21 @@
     [overtone.core :refer :all]
     [audio-demo.overtone-utils :refer [notes-g effects-g make-bus get-wt-data managed-control-bus]]
     [audio-demo.instruments.base-instrument :refer [note-on
-                                                      note-off
-                                                      bent-pitch
-                                                      pitch-bend
-                                                      initialize
-                                                      audible]]))
+                                                    note-off
+                                                    bent-pitch
+                                                    pitch-bend
+                                                    initialize
+                                                    audible]]))
 
 (defmulti start-synth (fn [note-data inst velocity] (:type inst)))
 
 (defmethod start-synth ::poly-instrument
   [{:keys [freq freq-bus synth] :as note-data}
-   {:keys [out-bus mod-wheel-bus synth-fn pitch-bend]}
+   {:keys [out-bus mod-wheel-bus synth-fn pb-value]}
    velocity]
   (if-not synth
     (do
-      (control-bus-set! freq-bus (bent-pitch freq pitch-bend))
+      (control-bus-set! freq-bus (bent-pitch freq pb-value))
       (assoc note-data :synth
                        (synth-fn [:tail notes-g]
                                  out-bus freq-bus mod-wheel-bus velocity)))
@@ -25,11 +25,11 @@
 
 (defmethod start-synth ::wt-poly-instrument
   [{:keys [freq freq-bus synth] :as note-data}
-   {:keys [out-bus mod-wheel-bus synth-fn pitch-bend]}
+   {:keys [out-bus mod-wheel-bus synth-fn pb-value]}
    velocity]
   (if-not synth
     (do
-      (control-bus-set! freq-bus (bent-pitch freq pitch-bend))
+      (control-bus-set! freq-bus (bent-pitch freq pb-value))
       (assoc note-data :synth
                        (let [[wt1 wt2 wt3 wt4] (get-wt-data freq)]
                          (synth-fn [:tail notes-g]
@@ -64,7 +64,7 @@
              (and audible
                   (get-in inst [:note-data current-note-num]))]
     (control-bus-set! freq-bus (bent-pitch freq pb-value)))
-  (assoc inst :pitch-bend pb-value))
+  (assoc inst :pb-value pb-value))
 
 (defn add-freq-busses [note-data]
   (mapv #(assoc % :freq-bus (managed-control-bus)) note-data))
@@ -80,12 +80,12 @@
    :synth-fn        synth-fn
    :input-type      input-type
    :bus-args        bus-args
-   :pitch-bend      0
+   :pb-value        0
    :mod-wheel-value 0
    :note-data       (repeat {})})
 
 (defn make-wt-poly-instrument [synth-fn input-type & bus-args]
-  (assoc (apply make-poly-instrument synth-fn input-type  bus-args)
+  (assoc (apply make-poly-instrument synth-fn input-type bus-args)
     :type ::wt-poly-instrument))
 
 (derive ::wt-poly-instrument ::poly-instrument)
