@@ -8,7 +8,7 @@ This will cause a small blank window to pop up. You can play notes by typing key
 
 There are also other keyboard commands available when this window is in focus. They are:
 
-Space bar - switch between scales
+Space bar - move to the next scale in the sequence, for the currently selected instrument.
 
 “1” - play the current recording.
 
