@@ -70,7 +70,9 @@
                         (* 2.0
                            (env-gen (adsr 0.2 0.0 1.0 0.01 :curve 0) :gate gate)
                            (tanh
-                             (* 3.0 (sin-osc freq)
+                             (* (pow freq -0.7)
+                                400
+                                (sin-osc freq)
                                 (log-interpolate (lag (in:kr modwheel-bus)) 0.2 1.0)))))
                       50)))))
 

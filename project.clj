@@ -9,4 +9,5 @@
                  [com.github.wendykierp/JTransforms "3.0"]
                  [org.clojure/algo.generic "0.1.3"]
                  [seesaw "1.5.0"]]
-  :repl-options {:init-ns audio-demo.loader})
+  :repl-options {:init-ns audio-demo.loader}
+  :injections [(refresh)])

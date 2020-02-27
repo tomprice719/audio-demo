@@ -16,5 +16,3 @@
     ((ns-resolve 'audio-demo.control 'shutdown)))
   (clojure.tools.namespace.repl/refresh
     :after 'audio-demo.core/on-refresh))
-
-(refresh)
