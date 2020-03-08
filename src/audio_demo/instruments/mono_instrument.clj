@@ -27,7 +27,7 @@
 (defmethod note-on :mono-instrument [{:keys [note-data] :as inst}
                                      note-num
                                      velocity]
-  (if-let [d (get note-data note-num)]
+  (if-let [d (and audible (get note-data note-num))]
     (-> inst
         (change-note d velocity)
         (assoc :current-note-num note-num))

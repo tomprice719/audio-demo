@@ -54,7 +54,7 @@
     recording))
 
 (defn update-time-offset [recording time-offset]
-  (assoc recording :time-offset (long (* time-offset 1000000000))))
+  (assoc recording :time-offset time-offset))
 
 (defn initial-events [{:keys [events time-offset]}]
   (->> (seq events)
